@@ -2,8 +2,6 @@ unless $LOAD_PATH.include? './lib'
   $LOAD_PATH.unshift './lib'
 end
 
-#require 'todo/controller'
-
 module Todo
   class App < Sinatra::Base
 

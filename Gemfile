@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 
 gem 'sinatra', '~>1.4.6'
 gem 'data_mapper'
+gem "em-hiredis"
 
 group :development do
   gem 'shotgun'

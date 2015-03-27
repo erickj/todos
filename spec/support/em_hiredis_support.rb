@@ -27,7 +27,12 @@ module EmHiredisSupport
 
   module Helper
     def em_hiredis_mock(replies = {}, &block)
-      yield RedisMock.new replies
+      redis = RedisMock.new(replies)
+      if block_given?
+        yield redis
+      else
+        redis
+      end
     end
   end
 end

@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'em-hiredis'
 
+require 'workqueue/runner'
 require 'workqueue/task'
 require 'workqueue/task_serializer'
 require 'workqueue/task_source'

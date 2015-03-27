@@ -11,6 +11,7 @@ end
 
 group :test, :development do
   gem 'rspec'
+  gem 'em-spec'
   gem 'dm-sqlite-adapter'
 end
 

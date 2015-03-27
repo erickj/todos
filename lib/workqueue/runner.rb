@@ -1,34 +1,41 @@
 require 'eventmachine'
 require 'em-hiredis'
 
-module Workqueue
+module WorkQueue
   class Runner
 
-    def initialize(task_sources, task_sinks)
-      @handlers = [task_sources, task_sinks].flatten
+    def initialize(*handlers)
+      handlers.each do |handler|
+        raise ArgumentError, "must respont to handle_tick" unless handler.respond_to? :handle_tick
+      end
+      @handlers = handlers
       @redis = nil
 
       @unscheduled_handlers = []
+      @periodic_timer_interval = 3 # seconds
     end
 
-    def run
-      EM.run do
-        @redis = EM::Hiredis.connect
+    def set_periodic_timer_interval(interval)
+      @periodic_timer_interval = interval
+      self
+    end
 
-        @handlers.each do |handler|
-          schedule_handler(handler, true)
-        end
+    def setup_reactor_hooks
+      raise "EM reactor not running, did you call EM.run?" unless EM.reactor_running?
 
-        EM.add_periodic_timer(3) do
-          reschedule_unscheduled_handlers
-        end
+      @redis = EM::Hiredis.connect
+
+      @handlers.each do |handler|
+        schedule_handler(handler, true)
+      end
+
+      EM.add_periodic_timer(@periodic_timer_interval) do
+        reschedule_unscheduled_handlers
       end
     end
 
     private
     def schedule_handler(handler, reschedule)
-      raise ArgumentError, "must respont to handle_tick" unless handler.responds_to? :handle_tick
-
       callback = EM.Callback do
         reschedule_immediate = handler.handle_tick(@redis)
         next unless reschedule

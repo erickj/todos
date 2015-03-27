@@ -5,12 +5,23 @@ module EmHiredisSupport
 
   class RedisMock
 
+    attr_reader :call_count
+    attr_reader :last
+
     def initialize(replies)
       @replies = replies
+      @last = { :command => nil, :args => nil }
+      @call_count = 0
     end
 
     def method_missing(command, *args, &block)
-      yield (@replies[command] || lambda { |*_| "+OK" }).call(*args)
+      @call_count += 1
+      @last[:command] = command
+      @last[:args] = args
+
+      if block_given?
+        yield (@replies[command] || lambda { |*_| "+OK" }).call(*args)
+      end
     end
   end
 

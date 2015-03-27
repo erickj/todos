@@ -15,7 +15,7 @@ module WorkQueue
       end
 
       @lock.synchronize do
-        @pending_queue.push(task_serializer.serialize(task))
+        @pending_queue.push(@task_serializer.serialize(task))
       end
     end
 
@@ -23,15 +23,15 @@ module WorkQueue
       return false if @pending_queue.empty?
 
       tmp_queue = nil
-      @lock.synchronize do1
-      tmp_queue = @pending_queue
-      @pending_queue = []
+      @lock.synchronize do
+        tmp_queue = @pending_queue
+        @pending_queue = []
+      end
 
       until tmp_queue.empty?
-        redis.rpush(@queue_name, tmp_queue.pop) do |redis_queue_size|
-          puts "Redis queue size now: #{redis_queue_size}"
-        end
+        redis.rpush(@queue_name, tmp_queue.pop)
       end
+      true
     end
   end
 end

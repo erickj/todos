@@ -2,42 +2,29 @@ require 'workqueue'
 
 RSpec.describe WQ::Runner, :wq do
 
-  let!(:redis) { em_hiredis_mock }
+  EM_TIMEOUT = 1
 
-  before(:each) do
-    # Stub EM::Hiredis with local `redis`
-    allow(EM::Hiredis).to receive(:connect) { redis }
-  end
+  let!(:redis) { em_hiredis_mock }
 
   context :setup_reactor_hooks do
     it 'validates handlers respond to +handle_tick+' do
-      expect { WQ::Runner.new(StubHandler.new) }.to_not raise_error
-      expect { WQ::Runner.new(Object.new) }.to raise_error ArgumentError
+      expect { WQ::Runner.new(redis, StubHandler.new) }.to_not raise_error
+      expect { WQ::Runner.new(redis, Object.new) }.to raise_error ArgumentError
     end
 
     it 'raises an error if the EM reactor is not running' do
-      runner = WQ::Runner.new
+      runner = WQ::Runner.new(redis)
       expect { runner.setup_reactor_hooks }.to raise_error(RuntimeError)
-    end
-
-    it 'connects to redis' do
-      expect(EM::Hiredis).to receive(:connect) { redis }
-
-      runner = WQ::Runner.new
-      em do
-        expect { runner.setup_reactor_hooks }.to_not raise_error
-        done
-      end
     end
 
     it 'passes redis to handlers from the event loop' do
       handler = nil
-      em do
+      em(EM_TIMEOUT) do
         handler = StubHandler.new do |redis_from_em|
           expect(redis_from_em).to be(redis)
           done
         end
-        runner = WQ::Runner.new(handler)
+        runner = WQ::Runner.new(redis, handler)
         runner.setup_reactor_hooks
       end
 
@@ -46,12 +33,12 @@ RSpec.describe WQ::Runner, :wq do
 
     it 'always calls handlers that return true' do
       handler = nil
-      em do
+      em(EM_TIMEOUT) do
         handler = StubHandler.new do |*_|
           done if handler.call_count == 1
           true
         end
-        runner = WQ::Runner.new(handler)
+        runner = WQ::Runner.new(redis, handler)
         runner.setup_reactor_hooks
       end
 
@@ -61,7 +48,7 @@ RSpec.describe WQ::Runner, :wq do
     # TODO(erick): This test could easily lead to flakes
     it 'un/reschedules handlers that return false' do
       control_handler, handler = nil
-      em do
+      em(EM_TIMEOUT) do
         control_handler = StubHandler.new true
         handler = StubHandler.new do |*_|
           done if handler.call_count == 1
@@ -69,7 +56,7 @@ RSpec.describe WQ::Runner, :wq do
         end
 
         # set_periodic_timer_interval to a small non-zero value
-        runner = WQ::Runner.new(control_handler, handler).set_periodic_timer_interval(0.01)
+        runner = WQ::Runner.new(redis, control_handler, handler).set_periodic_timer_interval(0.01)
         runner.setup_reactor_hooks
       end
 

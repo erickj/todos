@@ -1,7 +1,7 @@
 module WorkQueue
   class TaskSource
 
-    def initialize(queue_name, task_serializer)
+    def initialize(queue_name, task_serializer=TaskSerializer.instance)
       @task_serializer = task_serializer
       @pending_queue = []
       @lock = Mutex.new

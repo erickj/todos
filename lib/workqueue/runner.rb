@@ -1,15 +1,15 @@
 require 'eventmachine'
-require 'em-hiredis'
 
 module WorkQueue
   class Runner
 
-    def initialize(*handlers)
+    def initialize(redis, *handlers)
       handlers.each do |handler|
         raise ArgumentError, "must respont to handle_tick" unless handler.respond_to? :handle_tick
       end
+
+      @redis = redis
       @handlers = handlers
-      @redis = nil
 
       @unscheduled_handlers = []
       @periodic_timer_interval = 3 # seconds
@@ -22,8 +22,6 @@ module WorkQueue
 
     def setup_reactor_hooks
       raise "EM reactor not running, did you call EM.run?" unless EM.reactor_running?
-
-      @redis = EM::Hiredis.connect
 
       @handlers.each do |handler|
         schedule_handler(handler, true)

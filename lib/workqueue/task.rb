@@ -14,6 +14,13 @@ module WorkQueue
       Util::ObjectUtil.deep_equality_compare(self, other)
     end
     alias :eql? :==
+
+    def =~(value)
+      if value.is_a? Symbol
+        return task_type == value
+      end
+      self == value
+    end
   end
 
   class Task

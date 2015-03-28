@@ -24,7 +24,7 @@ module WorkQueue
       raise "EM reactor not running, did you call EM.run?" unless EM.reactor_running?
 
       @handlers.each do |handler|
-        schedule_handler(handler, true)
+        schedule_handler(handler)
       end
 
       EM.add_periodic_timer(@periodic_timer_interval) do
@@ -33,19 +33,20 @@ module WorkQueue
     end
 
     private
-    def schedule_handler(handler, reschedule)
-      callback = EM.Callback do
-        reschedule_immediate = handler.handle_tick(@redis)
-        next unless reschedule
-
-        if reschedule_immediate
-          EM.next_tick(callback)
-        else
-          @unscheduled_handlers << handler
-        end
+    # Schedules +handler+ to run on the reactor loop. The handler
+    # should return a deferred from +handle_tick+. Once the deferred
+    # succeeds, +handler+ will be immediately rescheduled on the next
+    # tick of the loop. If this deferred fails, +handler+ will be
+    # paused for +@periodic_timer_interval+ seconds+ before being
+    # rescheduled.
+    def schedule_handler(handler)
+      scheduled_handler_cb = EM.Callback do
+        handler.handle_tick(@redis)
+          .callback{ schedule_handler(handler) }
+          .errback{ @unscheduled_handlers << handler }
       end
 
-      EM.next_tick(callback)
+      EM.next_tick(scheduled_handler_cb)
     end
 
     def reschedule_unscheduled_handlers
@@ -53,7 +54,7 @@ module WorkQueue
       @unscheduled_handlers = []
 
       tmp.each do |handler|
-        schedule_handler(handler, true)
+        schedule_handler(handler)
       end
     end
   end

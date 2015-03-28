@@ -20,8 +20,8 @@ RSpec.describe WQ::Runner, :wq do
     it 'passes redis to handlers from the event loop' do
       handler = nil
       em(EM_TIMEOUT) do
-        handler = StubHandler.new do |redis_from_em|
-          expect(redis_from_em).to be(redis)
+        handler = StubHandler.new(false) do |redis_from_wq|
+          expect(redis_from_wq).to be(redis)
           done
         end
         runner = WQ::Runner.new(redis, handler)
@@ -31,12 +31,11 @@ RSpec.describe WQ::Runner, :wq do
       expect(handler.call_count).to be 1
     end
 
-    it 'always calls handlers that return true' do
+    it 'reschedules succeeded handlers' do
       handler = nil
       em(EM_TIMEOUT) do
-        handler = StubHandler.new do |*_|
+        handler = StubHandler.new(true) do |*_|
           done if handler.call_count == 1
-          true
         end
         runner = WQ::Runner.new(redis, handler)
         runner.setup_reactor_hooks
@@ -45,29 +44,45 @@ RSpec.describe WQ::Runner, :wq do
       expect(handler.call_count).to be 2
     end
 
-    # TODO(erick): This test could easily lead to flakes
-    it 'un/reschedules handlers that return false' do
-      control_handler, handler = nil
+    it 'unschedules handlers that return false' do
+      control_handler, handler_under_test = nil
       em(EM_TIMEOUT) do
-        control_handler = StubHandler.new true
-        handler = StubHandler.new do |*_|
-          done if handler.call_count == 1
-          control_handler.call_count == 2
+        control_handler = StubHandler.new(true) do |*_|
+          done if control_handler.call_count == 1
         end
+        handler_under_test = StubHandler.new(false)
 
-        # set_periodic_timer_interval to a small non-zero value
-        runner = WQ::Runner.new(redis, control_handler, handler).set_periodic_timer_interval(0.01)
+        runner = WQ::Runner.new(redis, control_handler, handler_under_test)
         runner.setup_reactor_hooks
       end
 
-      expect(handler.call_count).to be 1
+      expect(handler_under_test.call_count).to be 1
+      expect(control_handler.call_count).to be 2
+    end
+
+    it 'reschedules failed handlers' do
+      control_handler, handler_under_test = nil
+      em(EM_TIMEOUT) do
+        control_handler = StubHandler.new(true) do |*_|
+          done if control_handler.call_count == 1
+        end
+        handler_under_test = StubHandler.new(false)
+
+        runner = WQ::Runner.new(redis, control_handler, handler_under_test)
+        runner.set_periodic_timer_interval(0)
+        runner.setup_reactor_hooks
+      end
+
+      expect(handler_under_test.call_count).to be 2
       expect(control_handler.call_count).to be 2
     end
   end
 
   class StubHandler
-    def initialize(handle_tick_return=true, &block)
-      @handle_tick_return = !!handle_tick_return
+    def initialize(should_succeed=true, &block)
+      @deferred = EM::DefaultDeferrable.new
+      should_succeed ? @deferred.succeed : @deferred.fail
+
       @handler = block || nil
       @call_count = 0
     end
@@ -76,7 +91,8 @@ RSpec.describe WQ::Runner, :wq do
 
     def handle_tick(redis)
       @call_count += 1
-      @handler.nil? ? @handle_tick_return : @handler.call(redis)
+      @handler.call(redis) unless @handler.nil?
+      @deferred
     end
   end
 end

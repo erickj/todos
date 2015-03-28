@@ -19,8 +19,9 @@ module EmHiredisSupport
       @last[:command] = command
       @last[:args] = args
 
+      result = (@replies[command] || lambda { |*_| "+OK" }).call(*args)
       if block_given?
-        yield (@replies[command] || lambda { |*_| "+OK" }).call(*args)
+        yield result
       end
     end
   end

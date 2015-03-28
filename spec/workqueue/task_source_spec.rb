@@ -22,12 +22,27 @@ RSpec.describe WQ::TaskSource, :wq do
     let(:serializer) { WQ::TaskSerializer.instance }
     let(:task) { WQ::Task.new }
 
-    it 'returns false if there are no pending tasks' do
+    it 'returns failed deferrable if there are no pending tasks' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name, serializer)
 
-        expect(source.handle_tick(redis)).to be(false)
+        failed_result = source.handle_tick(redis)
+        errback_called = false
+        failed_result.errback { errback_called = true }
+        expect(errback_called). to be
         expect(redis.call_count).to be(0)
+      end
+    end
+
+    it 'returns succeeded deferrable if there are pending tasks' do
+      em_hiredis_mock(replies) do |redis|
+        source = WQ::TaskSource.new(:queue_name, serializer)
+        source.queue_task(task)
+
+        success_result = source.handle_tick(redis)
+        callback_called = false
+        success_result.callback { callback_called = true }
+        expect(callback_called). to be
       end
     end
 
@@ -36,7 +51,8 @@ RSpec.describe WQ::TaskSource, :wq do
         source = WQ::TaskSource.new(:queue_name, serializer)
         source.queue_task(task)
 
-        expect(source.handle_tick(redis)).to be
+        source.handle_tick(redis)
+
         expect(redis.call_count).to be(1)
         expect(redis.last[:args]).to be == [ :queue_name, serializer.serialize(task) ]
       end
@@ -49,7 +65,8 @@ RSpec.describe WQ::TaskSource, :wq do
         source.queue_task(WQ::Task.new)
         source.queue_task(WQ::Task.new)
 
-        expect(source.handle_tick(redis)).to be
+        source.handle_tick(redis)
+
         expect(redis.call_count).to be(3)
       end
     end
@@ -61,9 +78,14 @@ RSpec.describe WQ::TaskSource, :wq do
         source.handle_tick(redis)
         expect(redis.call_count).to be(1)
 
-        expect(source.handle_tick(redis)).to be(false)
+        failed_result = source.handle_tick(redis)
+        errback_called = false
+        failed_result.errback { errback_called = true }
+        expect(errback_called). to be
+
         expect(redis.call_count).to be(1)
       end
     end
+
   end
 end

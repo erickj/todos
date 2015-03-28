@@ -1,6 +1,12 @@
 module WorkQueue
   class TaskSource
 
+    SUCCESS = EM::DefaultDeferrable.new
+    SUCCESS.succeed
+
+    FAILURE = EM::DefaultDeferrable.new
+    FAILURE.fail
+
     def initialize(queue_name, task_serializer=TaskSerializer.instance)
       @task_serializer = task_serializer
       @pending_queue = []
@@ -20,7 +26,7 @@ module WorkQueue
     end
 
     def handle_tick(redis)
-      return false if @pending_queue.empty?
+      return FAILURE if @pending_queue.empty?
 
       tmp_queue = nil
       @lock.synchronize do
@@ -31,7 +37,7 @@ module WorkQueue
       until tmp_queue.empty?
         redis.rpush(@queue_name, tmp_queue.pop)
       end
-      true
+      SUCCESS
     end
   end
 end

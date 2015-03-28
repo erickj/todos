@@ -2,8 +2,9 @@ require 'util/object_util'
 
 module WorkQueue
   class Task
-    def work
-      raise NotImplementedError, "subclasses must implement #work"
+
+    def is_task?
+      true
     end
 
     def ==(other)

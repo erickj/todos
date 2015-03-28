@@ -20,8 +20,8 @@ module WorkQueue
 
     # Schedule a task for being added to the work queue
     def queue_task(task)
-      unless task.respond_to? :work
-        raise ArgumentError, "task must respond to :work"
+      unless task.is_task?
+        raise ArgumentError, "task must respond true to :is_task?"
       end
 
       @lock.synchronize do

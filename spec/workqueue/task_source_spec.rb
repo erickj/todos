@@ -12,6 +12,11 @@ RSpec.describe WQ::TaskSource, :wq do
     }
   end
 
+  it 'raises an ArgumentError if for non-tasks' do
+    source = WQ::TaskSource.new(:queue_name, WQ::TaskSerializer.instance)
+    expect { source.queue_task {} }.to raise_error ArgumentError
+  end
+
   it 'queues a task for pushing onto a queue' do
     source = WQ::TaskSource.new(:queue_name, WQ::TaskSerializer.instance)
     source.queue_task(WQ::Task.new)

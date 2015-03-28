@@ -3,6 +3,8 @@ require 'util/object_util'
 module WorkQueue
   module TaskMixin
 
+    attr_accessor :task_type
+
     def is_task?
       true
     end
@@ -16,5 +18,9 @@ module WorkQueue
 
   class Task
     include TaskMixin
+
+    def initialize(task_type = :default)
+      @task_type = task_type
+    end
   end
 end

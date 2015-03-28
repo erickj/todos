@@ -26,6 +26,7 @@ module WorkQueue
     private
     def process_raw_task_from_queue(raw_task)
       task = @task_serializer.deserialize(raw_task)
+      raise ArgumentError, 'not a task' unless task.is_task?
       @task_handler.call(task) unless @task_handler.nil?
     end
 

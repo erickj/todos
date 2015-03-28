@@ -1,7 +1,7 @@
 require 'util/object_util'
 
 module WorkQueue
-  class Task
+  module TaskMixin
 
     def is_task?
       true
@@ -12,5 +12,9 @@ module WorkQueue
       Util::ObjectUtil.deep_equality_compare(self, other)
     end
     alias :eql? :==
+  end
+
+  class Task
+    include TaskMixin
   end
 end

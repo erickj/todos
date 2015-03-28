@@ -24,8 +24,8 @@ RSpec.describe WQ::Runner, :wq do
           expect(redis_from_wq).to be(redis)
           done
         end
-        runner = WQ::Runner.new(redis, handler)
-        runner.setup_reactor_hooks
+        WQ::Runner.new(redis, handler)
+          .setup_reactor_hooks
       end
 
       expect(handler.call_count).to be 1
@@ -37,8 +37,8 @@ RSpec.describe WQ::Runner, :wq do
         handler = StubHandler.new(true) do |*_|
           done if handler.call_count == 1
         end
-        runner = WQ::Runner.new(redis, handler)
-        runner.setup_reactor_hooks
+        WQ::Runner.new(redis, handler)
+          .setup_reactor_hooks
       end
 
       expect(handler.call_count).to be 2
@@ -52,8 +52,8 @@ RSpec.describe WQ::Runner, :wq do
         end
         handler_under_test = StubHandler.new(false)
 
-        runner = WQ::Runner.new(redis, control_handler, handler_under_test)
-        runner.setup_reactor_hooks
+        WQ::Runner.new(redis, control_handler, handler_under_test)
+          .setup_reactor_hooks
       end
 
       expect(handler_under_test.call_count).to be 1
@@ -68,26 +68,56 @@ RSpec.describe WQ::Runner, :wq do
         end
         handler_under_test = StubHandler.new(false)
 
-        runner = WQ::Runner.new(redis, control_handler, handler_under_test)
-        runner.set_periodic_timer_interval(0)
-        runner.setup_reactor_hooks
+        WQ::Runner.new(redis, control_handler, handler_under_test)
+          .set_periodic_timer_interval(0)
+          .setup_reactor_hooks
       end
 
       expect(handler_under_test.call_count).to be 2
       expect(control_handler.call_count).to be 2
     end
+
+    it 'does not reschedule timed out handlers' do
+      control_handler, handler_that_times_out = nil
+      em(EM_TIMEOUT) do
+        control_handler = StubHandler.new(false) do |*_|
+          done if control_handler.call_count == 2
+        end
+        handler_that_times_out = StubHandler.new(nil)
+
+        WQ::Runner.new(redis, control_handler, handler_that_times_out)
+          .set_periodic_timer_interval(0.01)
+          .set_timeout(0)
+          .setup_reactor_hooks
+      end
+
+      expect(handler_that_times_out.call_count).to be 1
+      expect(control_handler.call_count).to be 2
+
+      errback_called = false
+      handler_that_times_out.deferred.errback do |result|
+        expect(result).to be :timeout
+        errback_called = true
+      end
+      expect(errback_called).to be
+    end
   end
 
   class StubHandler
+
     def initialize(should_succeed=true, &block)
       @deferred = EM::DefaultDeferrable.new
-      should_succeed ? @deferred.succeed : @deferred.fail
+
+      unless should_succeed.nil?
+        should_succeed ? @deferred.succeed : @deferred.fail
+      end
 
       @handler = block || nil
       @call_count = 0
     end
 
     attr_reader :call_count
+    attr_reader :deferred
 
     def handle_tick(redis)
       @call_count += 1

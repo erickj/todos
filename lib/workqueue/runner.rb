@@ -6,6 +6,9 @@ module WorkQueue
   # EventMachine run loop
   class Runner
 
+    DEFAULT_INTERVAL = 3 # seconds
+    DEFERRED_TIMEOUT = 3 # seconds
+
     def initialize(redis, *handlers)
       handlers.each do |handler|
         raise ArgumentError, "must respont to handle_tick" unless handler.respond_to? :handle_tick
@@ -15,11 +18,18 @@ module WorkQueue
       @handlers = handlers
 
       @unscheduled_handlers = []
-      @periodic_timer_interval = 3 # seconds
+      @timedout_handlers = []
+      @periodic_timer_interval = DEFAULT_INTERVAL
+      @deferred_timeout = DEFERRED_TIMEOUT
     end
 
     def set_periodic_timer_interval(interval)
       @periodic_timer_interval = interval
+      self
+    end
+
+    def set_timeout(timeout)
+      @deferred_timeout = timeout
       self
     end
 
@@ -41,12 +51,21 @@ module WorkQueue
     # succeeds, +handler+ will be immediately rescheduled on the next
     # tick of the loop. If this deferred fails, +handler+ will be
     # paused for +@periodic_timer_interval+ seconds+ before being
-    # rescheduled.
+    # rescheduled. A timeout is added to each deferred so that we can
+    # clear out dead handlers. Once timed out a handler is placed into
+    # the @timedout_handlers array and not rescheduled.
     def schedule_handler(handler)
       scheduled_handler_cb = EM.Callback do
         handler.handle_tick(@redis)
-          .callback{ schedule_handler(handler) }
-          .errback{ @unscheduled_handlers << handler }
+          .timeout(@deferred_timeout, :timeout)
+          .callback { schedule_handler(handler) }
+          .errback do |*args|
+          if args[0] == :timeout
+            @timedout_handlers << handler
+          else
+            @unscheduled_handlers << handler
+          end
+        end
       end
 
       EM.next_tick(scheduled_handler_cb)

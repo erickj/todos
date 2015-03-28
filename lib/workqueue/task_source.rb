@@ -1,4 +1,8 @@
 module WorkQueue
+
+  # Pushes serialized +Task+ objects onto a redis queue. Calls to
+  # redis are scheduled via calls to +handle_tick+. Normally calls to
+  # TaskSource#handle_tick will be scheduled via a WorkQueue::Runner.
   class TaskSource
 
     SUCCESS = EM::DefaultDeferrable.new

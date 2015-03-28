@@ -1,6 +1,9 @@
 require 'eventmachine'
 
 module WorkQueue
+
+  # Schedules calls to +handlers#handle_tick+ methods via the
+  # EventMachine run loop
   class Runner
 
     def initialize(redis, *handlers)

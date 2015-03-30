@@ -11,7 +11,7 @@ module Todo
       # See 'Customizing Associations':
       #   doc http://datamapper.org/docs/associations.html
       #   src https://github.com/datamapper/dm-core/blob/master/lib/dm-core/associations/relationship.rb
-      has n, :todo_templates
+      has n, :todo_templates, :child_key => :owner_id
     end
   end
 end

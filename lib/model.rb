@@ -5,4 +5,5 @@ require 'dm-types'
 require 'dm-validations'
 
 require 'model/person'
+require 'model/template_attachment'
 require 'model/todo_template'

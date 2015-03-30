@@ -48,5 +48,15 @@ describe Todo::Model::TodoTemplate, :model do
       expect(broken_model.errors[:owner_id].size).to be 1
       expect(broken_model.errors[:owner_id].first).to be =~ /must not be blank$/
     end
+
+    it 'should have many template attachments' do
+      attatchment = Todo::Model::TemplateAttachment.create({
+        :mime_type => 'text/plain',
+        :name => 'anattatchment.txt',
+        :content => 'I have a lovely bunch of cocunuts'
+      })
+      model.template_attachments << attatchment
+      model.save
+    end
   end
 end

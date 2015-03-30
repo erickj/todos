@@ -8,6 +8,8 @@ module Todo
       property :description, Text
       property :created_at, EpochTime
 
+      has n, :template_attachments
+
       # See 'Customizing Associations':
       #   doc http://datamapper.org/docs/associations.html
       #   src https://github.com/datamapper/dm-core/blob/master/lib/dm-core/associations/relationship.rb

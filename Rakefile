@@ -3,4 +3,10 @@ begin
   RSpec::Core::RakeTask.new(:spec)
 rescue LoadError
 end
-task :default => :spec
+
+desc "Run RSpec tests with `bundle exec`"
+task :bxspec do
+  `bundle exec rspec`
+end
+
+task :default => :bxspec

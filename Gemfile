@@ -13,6 +13,7 @@ group :test, :development do
   gem 'rspec'
   gem 'em-spec'
   gem 'dm-sqlite-adapter'
+  gem 'database_cleaner'
 end
 
 group :production do

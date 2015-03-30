@@ -6,7 +6,8 @@ end
 
 desc "Run RSpec tests with `bundle exec`"
 task :bxspec do
-  `bundle exec rspec`
+  puts 'Run with `bundle exec rspec` to see colorized output'
+  puts `bundle exec rspec`
 end
 
 task :default => :bxspec

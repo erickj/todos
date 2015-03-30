@@ -104,13 +104,15 @@ RSpec.configure do |config|
   # - sqlite:///path/to/a/sqlite.db
   # - mysql://root@localhost/some_specs
   DataMapper.setup(:default, 'sqlite::memory:')
-  DataMapper.finalize.auto_migrate!
   DataMapper::Model.raise_on_save_failure = true
 
   # see https://github.com/DatabaseCleaner/database_cleaner
   config.before(:suite) do
     DatabaseCleaner.clean_with :truncation
     DatabaseCleaner.strategy = :transaction
+
+    # Finalize and build tables before the test suite runs but after all models are loaded
+    DataMapper.finalize.auto_migrate!
   end
 
   config.around(:each) do |spec|

@@ -13,6 +13,7 @@ group :test, :development do
   gem 'rspec'
   gem 'em-spec'
   gem 'dm-sqlite-adapter'
+  gem 'dm-transactions' # included manually due to database_cleaner
   gem 'database_cleaner'
 end
 

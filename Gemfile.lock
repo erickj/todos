@@ -112,6 +112,7 @@ DEPENDENCIES
   database_cleaner
   dm-mysql-adapter
   dm-sqlite-adapter
+  dm-transactions
   em-hiredis
   em-spec
   rspec

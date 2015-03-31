@@ -3,7 +3,7 @@ require 'util/object_util'
 module WorkQueue
   module TaskMixin
 
-    attr_accessor :task_type
+    attr_reader :task_type
 
     def is_task?
       true

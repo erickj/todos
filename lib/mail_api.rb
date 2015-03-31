@@ -21,5 +21,11 @@ module Todo
       'request to /mail'
     end
 
+    post '/mail' do
+      request.body.rewind
+      puts "/mail request body"
+      puts request.body.read
+    end
+
   end
 end

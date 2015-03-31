@@ -8,6 +8,13 @@ require 'rack'
 
 Bundler.require
 
+# load ENV variables from .environment
+if File.exists? ".environment"
+  File.readlines(".environment").map { |line| line.rstrip.split(/=/) }.each do |pair|
+    ENV[pair[0]] = ENV[pair[1]]
+  end
+end
+
 ENV['RUN_DIR'] = File.join(Dir.home, 'tmp', 'todo');
 unless Dir.exist?(ENV['RUN_DIR'])
   Dir.mkdir(ENV['RUN_DIR'], 0770)

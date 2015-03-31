@@ -10,7 +10,7 @@ module WorkQueue
     end
 
     def ==(other)
-      return false unless other.is_a?(Task)
+      return false unless other.kind_of?(TaskMixin)
       Util::ObjectUtil.deep_equality_compare(self, other)
     end
     alias :eql? :==

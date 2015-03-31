@@ -27,6 +27,20 @@ describe Todo::Model::TodoTemplate, :model do
     it 'should have a description' do
       expect(model.description).to eql 'Get all my stuff done!'
     end
+
+    it 'should have a default state of :todo' do
+      expect(model.state).to be :todo
+    end
+
+    it 'should allow state :done' do
+      model.update :state => :done
+      expect(model.state).to be :done
+    end
+
+    it 'should be indexed on state' do
+      todos = Todo::Model::TodoTemplate.all :state => :todo
+      expect(todos.first).to eql model
+    end
   end
 
   context 'associations' do
@@ -50,6 +64,8 @@ describe Todo::Model::TodoTemplate, :model do
     end
 
     it 'should have many template attachments' do
+      expect(model.template_attachments).to be_empty
+
       attatchment = Todo::Model::TemplateAttachment.create({
         :mime_type => 'text/plain',
         :name => 'anattatchment.txt',
@@ -57,6 +73,15 @@ describe Todo::Model::TodoTemplate, :model do
       })
       model.template_attachments << attatchment
       model.save
+      expect(model.template_attachments).to_not be_empty
+    end
+
+    it 'should have a default recurrence rule', :x do
+      expect(model.recurrence_rules.size).to be 1
+
+      rule = model.recurrence_rules[0]
+      expect(rule.start_time.to_i).to be_within(1).of Time.now.to_i
+      expect(rule.count).to be 1
     end
   end
 end

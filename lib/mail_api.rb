@@ -1,4 +1,6 @@
+require 'json'
 require 'model'
+require 'uri'
 
 module Todo
   class MailApi < Sinatra::Base
@@ -24,7 +26,9 @@ module Todo
     post '/mail' do
       request.body.rewind
       puts "/mail request body"
-      puts request.body.read
+      parts = request.body.read.split(/=/, 2)
+      mandril_events_json = URI.decode parts[1]
+      puts JSON.pretty_generate JSON.parse(mandril_events_json)
     end
 
   end

@@ -2,6 +2,7 @@ require 'rubygems'
 require 'em-hiredis'
 
 require 'workqueue/event_emitter'
+require 'workqueue/publisher'
 require 'workqueue/runner'
 require 'workqueue/task'
 require 'workqueue/task_serializer'

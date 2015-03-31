@@ -6,6 +6,7 @@ module WorkQueue
   # * handle_tick_end(Time.now) - upon completing handling each tick
   class Handler
     include EventEmitter
+    include Publisher
 
     SUCCESS = EM::DefaultDeferrable.new
     SUCCESS.succeed

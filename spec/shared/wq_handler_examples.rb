@@ -1,8 +1,10 @@
 require 'shared/wq_event_emitter_examples'
+require 'shared/wq_publisher_examples'
 
 RSpec.shared_examples 'a wq::handler' do
 
   it_behaves_like 'a wq::event_emitter'
+  it_behaves_like 'a wq::publisher'
 
   let!(:redis) do
     em_hiredis_mock({ :lpop => lambda { |*_| nil } })

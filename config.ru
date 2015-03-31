@@ -14,7 +14,16 @@ unless Dir.exist?(ENV['RUN_DIR'])
   puts "Created %s" % ENV['RUN_DIR']
 end
 
-require './todo_app.rb'
-run Rack::URLMap.new(
-      "/api" => Todo::Api,
-      "/mail" => Todo::MailApi);
+require 'todo_app'
+require 'lib/api'
+require 'lib/mail_api'
+
+Todo::App.start do |app|
+
+  app.add_wq_event_handlers(Todo::Api.workqueue_handlers)
+  app.add_wq_event_handlers(Todo::MailApi.workqueue_handlers)
+
+  run(Rack::URLMap.new(
+       app.web_root + "/api" => Todo::Api,
+       app.web_root + "/mailapi" => Todo::MailApi))
+end

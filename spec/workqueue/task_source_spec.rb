@@ -1,6 +1,13 @@
 require 'workqueue'
+require 'shared/wq_handler_examples'
 
 RSpec.describe WQ::TaskSource, :wq do
+
+  # set subject for shared examples
+  subject { WQ::TaskSource.new :foo_queue }
+
+  it_behaves_like 'a wq::handler'
+
   let(:replies) do
     hash_of_lists = {}
     {
@@ -13,23 +20,22 @@ RSpec.describe WQ::TaskSource, :wq do
   end
 
   it 'raises an ArgumentError if for non-tasks' do
-    source = WQ::TaskSource.new(:queue_name, WQ::TaskSerializer.instance)
+    source = WQ::TaskSource.new(:queue_name)
     expect { source.queue_task {} }.to raise_error ArgumentError
   end
 
   it 'queues a task for pushing onto a queue' do
-    source = WQ::TaskSource.new(:queue_name, WQ::TaskSerializer.instance)
+    source = WQ::TaskSource.new(:queue_name)
     source.queue_task(WQ::Task.new)
   end
 
   context 'handle_tick' do
 
-    let(:serializer) { WQ::TaskSerializer.instance }
     let(:task) { WQ::Task.new }
 
     it 'returns failed deferrable if there are no pending tasks' do
       em_hiredis_mock(replies) do |redis|
-        source = WQ::TaskSource.new(:queue_name, serializer)
+        source = WQ::TaskSource.new(:queue_name)
 
         failed_result = source.handle_tick(redis)
         errback_called = false
@@ -41,7 +47,7 @@ RSpec.describe WQ::TaskSource, :wq do
 
     it 'returns succeeded deferrable if there are pending tasks' do
       em_hiredis_mock(replies) do |redis|
-        source = WQ::TaskSource.new(:queue_name, serializer)
+        source = WQ::TaskSource.new(:queue_name)
         source.queue_task(task)
 
         success_result = source.handle_tick(redis)
@@ -53,19 +59,22 @@ RSpec.describe WQ::TaskSource, :wq do
 
     it 'pushes queued tasks onto redis list named :queue_name' do
       em_hiredis_mock(replies) do |redis|
-        source = WQ::TaskSource.new(:queue_name, serializer)
+        source = WQ::TaskSource.new(:queue_name)
         source.queue_task(task)
 
         source.handle_tick(redis)
 
         expect(redis.call_count).to be(1)
-        expect(redis.last[:args]).to be == [ :queue_name, serializer.serialize(task) ]
+        expect(redis.last[:args]).to be == [
+                                       :queue_name,
+                                       WQ::TaskSerializer.instance.serialize(task)
+                                     ]
       end
     end
 
     it 'pushes multiple tasks' do
       em_hiredis_mock(replies) do |redis|
-        source = WQ::TaskSource.new(:queue_name, serializer)
+        source = WQ::TaskSource.new(:queue_name)
         source.queue_task(WQ::Task.new)
         source.queue_task(WQ::Task.new)
         source.queue_task(WQ::Task.new)
@@ -78,7 +87,7 @@ RSpec.describe WQ::TaskSource, :wq do
 
     it 'empties its queue after pushing all tasks' do
       em_hiredis_mock(replies) do |redis|
-        source = WQ::TaskSource.new(:queue_name, serializer)
+        source = WQ::TaskSource.new(:queue_name)
         source.queue_task(task)
         source.handle_tick(redis)
         expect(redis.call_count).to be(1)

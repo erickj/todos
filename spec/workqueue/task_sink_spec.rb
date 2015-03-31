@@ -1,6 +1,12 @@
 require 'workqueue'
+require 'shared/wq_handler_examples'
 
 RSpec.describe WQ::TaskSink, :wq do
+
+  # set subject for shared examples
+  subject { WQ::TaskSink.new :foo_queue }
+
+  it_behaves_like 'a wq::handler'
 
   let(:replies) do
     hash_of_lists = {}
@@ -24,7 +30,7 @@ RSpec.describe WQ::TaskSink, :wq do
 
     it 'returns a failed deferred if queue is empty' do
       em_hiredis_mock(replies) do |redis|
-        sink = WQ::TaskSink.new(:queue_name, serializer)
+        sink = WQ::TaskSink.new(:queue_name)
 
         failed_result = sink.handle_tick(redis)
         errback_called = false
@@ -42,7 +48,7 @@ RSpec.describe WQ::TaskSink, :wq do
           expect(rpush_size).to be 1
         end
 
-        sink = WQ::TaskSink.new(:queue_name, serializer)
+        sink = WQ::TaskSink.new(:queue_name)
 
         success_result = sink.handle_tick(redis)
         callback_called = false
@@ -61,7 +67,7 @@ RSpec.describe WQ::TaskSink, :wq do
         end
 
         task_handler_called = false
-        WQ::TaskSink.new(:queue_name, serializer) do |handled_task|
+        WQ::TaskSink.new(:queue_name) do |handled_task|
           expect(handled_task).to eql task
           task_handler_called = true
         end.handle_tick(redis)

@@ -3,16 +3,9 @@ module WorkQueue
   # Pushes serialized +Task+ objects onto a redis queue. Calls to
   # redis are scheduled via calls to +handle_tick+. Normally calls to
   # TaskSource#handle_tick will be scheduled via a WorkQueue::Runner.
-  class TaskSource
+  class TaskSource < Handler
 
-    SUCCESS = EM::DefaultDeferrable.new
-    SUCCESS.succeed
-
-    FAILURE = EM::DefaultDeferrable.new
-    FAILURE.fail
-
-    def initialize(queue_name, task_serializer=TaskSerializer.instance)
-      @task_serializer = task_serializer
+    def initialize(queue_name)
       @pending_queue = []
       @lock = Mutex.new
       @queue_name = queue_name
@@ -25,12 +18,13 @@ module WorkQueue
       end
 
       @lock.synchronize do
-        @pending_queue.push(@task_serializer.serialize(task))
+        @pending_queue.push(task_serializer.serialize(task))
       end
     end
 
-    def handle_tick(redis)
-      return FAILURE if @pending_queue.empty?
+    # override Handler#handle_tick_internal
+    def handle_tick_internal(redis)
+      return Handler::FAILURE if @pending_queue.empty?
 
       tmp_queue = nil
       @lock.synchronize do
@@ -41,7 +35,7 @@ module WorkQueue
       until tmp_queue.empty?
         redis.rpush(@queue_name, tmp_queue.pop)
       end
-      SUCCESS
+      Handler::SUCCESS
     end
   end
 end

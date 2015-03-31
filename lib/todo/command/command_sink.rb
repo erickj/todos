@@ -1,10 +1,14 @@
 require 'workqueue/task_sink'
 
 module Todo::Command
+
+  # Emits events:
+  #
+  # * :command_complete
   class CommandSink < WQ::TaskSink
 
-    def initialize(task_serializer=TaskSerializer.instance)
-      super(QUEUE_NAME, task_serializer, &method(:process_command))
+    def initialize
+      super(QUEUE_NAME, &method(:process_command))
     end
 
     private
@@ -21,7 +25,14 @@ module Todo::Command
         raise ArgumentError, 'unknown task type'
       end
 
-      processor.process(task)
+      process_op = lambda do |*_|
+        processor.process(task).uuid
+      end
+      EM.defer process_op, &method(:handle_processing_complete).to_proc.curry(task)
+    end
+
+    def handle_processing_complete(task, uuid)
+      emit :command_complete, CommandResult.new(uuid, task)
     end
   end
 end

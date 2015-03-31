@@ -5,6 +5,7 @@ gem 'thin'
 gem 'sinatra', '~>1.4.6'
 gem 'data_mapper'
 gem "em-hiredis"
+gem "mandrill-api"
 
 group :development do
   gem 'shotgun'

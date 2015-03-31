@@ -71,10 +71,14 @@ GEM
       rspec (> 2.6.0)
       test-unit
     eventmachine (1.0.7)
+    excon (0.45.1)
     fastercsv (1.5.5)
     hiredis (0.5.2)
     json (1.8.2)
     json_pure (1.8.2)
+    mandrill-api (1.0.53)
+      excon (>= 0.16.0, < 1.0)
+      json (>= 1.7.7, < 2.0)
     multi_json (1.11.0)
     power_assert (0.2.3)
     rack (1.6.0)
@@ -120,6 +124,7 @@ DEPENDENCIES
   dm-transactions
   em-hiredis
   em-spec
+  mandrill-api
   rspec
   shotgun
   sinatra (~> 1.4.6)

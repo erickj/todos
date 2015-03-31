@@ -1,4 +1,4 @@
-require 'shared_examples/model'
+require 'shared/model_examples'
 require 'model'
 
 describe Todo::Model::Person, :model do

@@ -20,6 +20,9 @@ module WorkQueue
           deferred_result.succeed
         end
       end
+      # The deferred_result only indicates whether the queue was empty, not
+      # whether processing succeeded. If the queue is empty (deferred fails)
+      # then the WQ::Runner will unschedule this sink for a few moments.
       deferred_result
     end
 

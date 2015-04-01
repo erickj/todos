@@ -3,7 +3,15 @@ require 'util/object_util'
 module WorkQueue
   module TaskMixin
 
-    attr_reader :task_type
+    def self.included(base)
+      base.extend ClassMethods
+    end
+
+    attr_writer :task_type
+
+    def task_type
+      @task_type || self.class.task_type
+    end
 
     def is_task?
       true
@@ -21,13 +29,22 @@ module WorkQueue
       end
       self == value
     end
+
+    module ClassMethods
+
+      def task_type(type=nil)
+        @task_type ||= type
+      end
+    end
   end
 
   class Task
     include TaskMixin
 
-    def initialize(task_type = :default)
-      @task_type = task_type
+    task_type :default
+
+    def initialize(type=nil)
+      self.task_type = type
     end
   end
 end

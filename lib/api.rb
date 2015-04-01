@@ -1,6 +1,6 @@
 require 'json'
 require 'todo/command'
-require 'model'
+require 'todo/model'
 
 module Todo
   class Api < Sinatra::Base

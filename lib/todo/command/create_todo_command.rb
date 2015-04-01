@@ -1,5 +1,5 @@
 require 'workqueue/task'
-require 'model'
+require 'todo/model'
 
 module Todo
   module Command

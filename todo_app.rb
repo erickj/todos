@@ -4,7 +4,6 @@ end
 
 require 'data_mapper'
 require 'workqueue'
-require 'model'
 
 DataMapper::Logger.new($stdout, :debug)
 DataMapper.setup(:default, 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db');

@@ -1,5 +1,5 @@
 require 'json'
-require 'model'
+require 'todo/model'
 require 'uri'
 
 module Todo

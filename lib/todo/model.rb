@@ -1,0 +1,10 @@
+require 'dm-core'
+require 'dm-serializer'
+require 'dm-timestamps'
+require 'dm-types'
+require 'dm-validations'
+
+require 'todo/model/person'
+require 'todo/model/recurrence_rule'
+require 'todo/model/template_attachment'
+require 'todo/model/todo_template'

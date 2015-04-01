@@ -1,5 +1,5 @@
 require 'shared/model_examples'
-require 'model'
+require 'todo/model'
 
 describe Todo::Model::TodoTemplate, :model do
 

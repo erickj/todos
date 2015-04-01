@@ -11,6 +11,10 @@ module WorkQueue
       @queue_name = queue_name
     end
 
+    def empty?
+      @pending_queue.empty?
+    end
+
     # Schedule a task for being added to the work queue
     def queue_task(task)
       unless task.is_task?
@@ -21,6 +25,7 @@ module WorkQueue
         @pending_queue.push(task_serializer.serialize(task))
       end
     end
+    alias :<< :queue_task
 
     # override Handler#handle_tick_internal
     def handle_tick_internal

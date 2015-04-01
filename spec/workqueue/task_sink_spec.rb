@@ -4,7 +4,7 @@ require 'shared/wq_handler_examples'
 RSpec.describe WQ::TaskSink, :wq do
 
   # set subject for shared examples
-  subject { WQ::TaskSink.new :foo_queue }
+  subject { WQ::TaskSink.new :queue_name }
 
   it_behaves_like 'a wq::handler'
 
@@ -30,10 +30,9 @@ RSpec.describe WQ::TaskSink, :wq do
 
     it 'returns a failed deferred if queue is empty' do
       em_hiredis_mock(replies) do |redis|
-        sink = WQ::TaskSink.new(:queue_name)
-        sink.redis = redis
+        subject.redis = redis
 
-        failed_result = sink.handle_tick
+        failed_result = subject.handle_tick
         errback_called = false
         failed_result.errback { errback_called = true }
         expect(errback_called). to be
@@ -49,10 +48,9 @@ RSpec.describe WQ::TaskSink, :wq do
           expect(rpush_size).to be 1
         end
 
-        sink = WQ::TaskSink.new(:queue_name)
-        sink.redis = redis
+        subject.redis = redis
 
-        success_result = sink.handle_tick
+        success_result = subject.handle_tick
         callback_called = false
         success_result.callback { callback_called = true }
         expect(callback_called). to be

@@ -4,5 +4,6 @@ module Todo
   end
 end
 
+require 'todo/command/processor'
 require 'todo/command/task_type'
 require 'todo/command/create_todo_command'

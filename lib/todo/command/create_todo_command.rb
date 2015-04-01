@@ -3,42 +3,43 @@ require 'todo/model'
 
 module Todo
   module Command
-    class CreateTodoCommand
-      include WorkQueue::TaskMixin
+    module CreateTodo
+      class Command
+        include WorkQueue::TaskMixin
 
-      attr_reader :owner_email
-      attr_reader :title
-      attr_reader :description
+        task_type TaskType::CREATE_TODO
 
-      def initialize
-        @task_type = TaskType::CREATE_TODO
-      end
+        attr_reader :owner_email
+        attr_reader :title
+        attr_reader :description
 
-      def self.build(owner_email, title, description)
-        command = self.new
+        def self.build(owner_email, title, description)
+          command = self.new
 
-        command.instance_variable_set(:"@owner_email", owner_email)
-        command.instance_variable_set(:"@title", title)
-        command.instance_variable_set(:"@description", description)
+          command.instance_variable_set(:"@owner_email", owner_email)
+          command.instance_variable_set(:"@title", title)
+          command.instance_variable_set(:"@description", description)
 
-        command
-      end
-    end
-
-    class CreateTodoCommandProcessor
-
-      def process(task)
-        unless task =~ TaskType::CREATE_TODO
-          raise ArgumentError, 'not a create command'
+          command
         end
+      end
 
-        task_owner = Model::Person.first_or_create(:email => task.owner_email)
+      class Processor
+        include Todo::Command::Processor
 
-        Model::TodoTemplate.create({
-          :title => task.title,
-          :description => task.description,
-          :owner => task_owner
-        })
+        processes TaskType::CREATE_TODO
+
+        # overrides
+        protected
+        def process_command_internal(command)
+          owner = Model::Person.first_or_create(:email => command.owner_email)
+
+          Model::TodoTemplate.create({
+                                       :title => command.title,
+                                       :description => command.description,
+                                       :owner => owner
+                                     })
+        end
       end
     end
   end

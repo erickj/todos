@@ -4,7 +4,9 @@ module Todo::Command
 
   # Emits events:
   #
-  # * :command_complete
+  # * :process_command_begin(Time.now)
+  # * :process_command_end(Time.now)
+  # * :process_command_result(UUID, Task)
   class CommandSink < WQ::TaskSink
 
     def initialize
@@ -13,26 +15,20 @@ module Todo::Command
 
     private
     def process_command(command_task)
+      emit :process_command_begin, Time.now
+
       processor = nil
       case command_task
       when TaskType::CREATE_TODO
-        processor = CreateTodoCommandProcessor.new
-      # when TaskType::UPDATE_TODO
-      #   processor = UpdateTodoCommandProcessor.new
-      # when TaskType::DELETE_TODO
-      #   processor = DeleteTodoCommandProcessor.new
+        processor = CreateTodo::Processor.new
       else
         raise ArgumentError, 'unknown task type'
       end
 
-      process_op = lambda do |*_|
-        processor.process(task).uuid
-      end
-      EM.defer process_op, &method(:handle_processing_complete).to_proc.curry(task)
+      model = processor.process(task)
+      emit :process_command_end, Time.now
+      emit :process_command_result, CommandResult.new(model.uuid, task)
     end
 
-    def handle_processing_complete(task, uuid)
-      emit :command_complete, CommandResult.new(uuid, task)
-    end
   end
 end

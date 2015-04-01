@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'util/object_util'
 
 module WorkQueue
@@ -41,6 +42,10 @@ module WorkQueue
         return task_type == value
       end
       self == value
+    end
+
+    def uuid
+      @uuid ||= SecureRandom.uuid
     end
 
     attr_writer :field_values

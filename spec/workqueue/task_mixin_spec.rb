@@ -1,3 +1,4 @@
+require 'uuidtools'
 require 'workqueue'
 
 RSpec.describe WQ::TaskMixin, :wq do
@@ -23,6 +24,10 @@ RSpec.describe WQ::TaskMixin, :wq do
   end
 
   it 'compares to symbols in a case statement'
+
+  it 'should have a UUID' do
+    expect(UUIDTools::UUID.parse task.uuid).to be_a UUIDTools::UUID
+  end
 
   context 'fields and build' do
 

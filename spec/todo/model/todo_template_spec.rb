@@ -1,5 +1,6 @@
 require 'shared/model_examples'
 require 'todo/model'
+require 'uuidtools'
 
 describe Todo::Model::TodoTemplate, :model do
 

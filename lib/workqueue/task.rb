@@ -56,6 +56,15 @@ module WorkQueue
       super(name, *args)
     end
 
+    # Returns a hash representing all the field values
+    def to_h
+      hash = {}
+      self.class.field_definitions.each do |k, v|
+        hash[k] = field_value k
+      end
+      hash
+    end
+
     private
     def field_value(name)
       @field_values[name] || self.class.field_definitions[name].get_default

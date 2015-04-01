@@ -50,6 +50,10 @@ RSpec.describe WQ::TaskMixin, :wq do
       expect(subject.done_by).to eql field_values[:done_by]
     end
 
+    it 'builds a hash of the expected values with +to_h+' do
+      expect(subject.to_h).to eql field_values
+    end
+
     it 'uses default values for missing fields' do
       field_values.delete :errand_list
       subject = DoErrandsTask.build field_values

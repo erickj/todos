@@ -5,7 +5,12 @@ describe Todo::Command::CreateTodo::Command, :command do
 
   include_context 'a task'
 
-  subject { Todo::Command::CreateTodo::Command.build 'e@j.com', 'a title', 'a description' }
+  subject do Todo::Command::CreateTodo::Command.build({
+                                                        :owner_email => 'e@j.com',
+                                                        :title => 'a title',
+                                                        :description => 'a description'
+                                                      })
+  end
 
   it 'has a builder method' do
     expect(subject.owner_email).to eql 'e@j.com'

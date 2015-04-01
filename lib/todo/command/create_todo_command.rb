@@ -4,24 +4,22 @@ require 'todo/model'
 module Todo
   module Command
     module CreateTodo
+
       class Command
         include WorkQueue::TaskMixin
 
         task_type TaskType::CREATE_TODO
 
-        attr_reader :owner_email
-        attr_reader :title
-        attr_reader :description
+        field(:owner_email)
+          .required
+          .type String
 
-        def self.build(owner_email, title, description)
-          command = self.new
+        field(:title)
+          .required
+          .type String
 
-          command.instance_variable_set(:"@owner_email", owner_email)
-          command.instance_variable_set(:"@title", title)
-          command.instance_variable_set(:"@description", description)
-
-          command
-        end
+        field(:description)
+          .type String
       end
 
       class Processor
@@ -34,11 +32,10 @@ module Todo
         def process_command_internal(command)
           owner = Model::Person.first_or_create(:email => command.owner_email)
 
-          Model::TodoTemplate.create({
-                                       :title => command.title,
-                                       :description => command.description,
-                                       :owner => owner
-                                     })
+          fields = command.to_h
+          fields.delete :owner_email
+          fields[:owner] = owner
+          Model::TodoTemplate.create(fields)
         end
       end
     end

@@ -14,9 +14,11 @@ module WorkQueue
     FAILURE = EM::DefaultDeferrable.new
     FAILURE.fail
 
-    def handle_tick(redis)
+    attr_accessor :redis
+
+    def handle_tick
       emit(:handle_tick_begin, Time.now)
-      result = handle_tick_internal(redis)
+      result = handle_tick_internal
       emit(:handle_tick_end, Time.now)
       result
     end
@@ -26,7 +28,7 @@ module WorkQueue
       TaskSerializer.instance
     end
 
-    def handle_tick_internal(redis)
+    def handle_tick_internal
       SUCCESS
     end
   end

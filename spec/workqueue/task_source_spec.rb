@@ -36,8 +36,9 @@ RSpec.describe WQ::TaskSource, :wq do
     it 'returns failed deferrable if there are no pending tasks' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name)
+        source.redis = redis
 
-        failed_result = source.handle_tick(redis)
+        failed_result = source.handle_tick
         errback_called = false
         failed_result.errback { errback_called = true }
         expect(errback_called). to be
@@ -48,9 +49,10 @@ RSpec.describe WQ::TaskSource, :wq do
     it 'returns succeeded deferrable if there are pending tasks' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name)
+        source.redis = redis
         source.queue_task(task)
 
-        success_result = source.handle_tick(redis)
+        success_result = source.handle_tick
         callback_called = false
         success_result.callback { callback_called = true }
         expect(callback_called). to be
@@ -60,9 +62,10 @@ RSpec.describe WQ::TaskSource, :wq do
     it 'pushes queued tasks onto redis list named :queue_name' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name)
+        source.redis = redis
         source.queue_task(task)
 
-        source.handle_tick(redis)
+        source.handle_tick
 
         expect(redis.call_count).to be(1)
         expect(redis.last[:args]).to be == [
@@ -75,11 +78,12 @@ RSpec.describe WQ::TaskSource, :wq do
     it 'pushes multiple tasks' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name)
+        source.redis = redis
         source.queue_task(WQ::Task.new)
         source.queue_task(WQ::Task.new)
         source.queue_task(WQ::Task.new)
 
-        source.handle_tick(redis)
+        source.handle_tick
 
         expect(redis.call_count).to be(3)
       end
@@ -88,11 +92,12 @@ RSpec.describe WQ::TaskSource, :wq do
     it 'empties its queue after pushing all tasks' do
       em_hiredis_mock(replies) do |redis|
         source = WQ::TaskSource.new(:queue_name)
+        source.redis = redis
         source.queue_task(task)
-        source.handle_tick(redis)
+        source.handle_tick
         expect(redis.call_count).to be(1)
 
-        failed_result = source.handle_tick(redis)
+        failed_result = source.handle_tick
         errback_called = false
         failed_result.errback { errback_called = true }
         expect(errback_called). to be

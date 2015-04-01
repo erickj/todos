@@ -10,7 +10,7 @@ module WorkQueue
     end
 
     # override Handler#handle_tick_internal
-    def handle_tick_internal(redis)
+    def handle_tick_internal
       deferred_result = EM::DefaultDeferrable.new
       redis.lpop(@queue_name) do |lpop_result|
         if lpop_result.nil?

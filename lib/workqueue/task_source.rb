@@ -23,7 +23,7 @@ module WorkQueue
     end
 
     # override Handler#handle_tick_internal
-    def handle_tick_internal(redis)
+    def handle_tick_internal
       return Handler::FAILURE if @pending_queue.empty?
 
       tmp_queue = nil

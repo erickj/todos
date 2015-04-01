@@ -2,33 +2,17 @@ require 'workqueue'
 
 RSpec.describe WQ::Runner, :wq do
 
-  EM_TIMEOUT = 1
-
-  let!(:redis) { em_hiredis_mock }
+  EM_TIMEOUT = 0.5
 
   context :setup_reactor_hooks do
     it 'validates handlers respond to +handle_tick+' do
-      expect { WQ::Runner.new(redis, StubHandler.new) }.to_not raise_error
-      expect { WQ::Runner.new(redis, Object.new) }.to raise_error ArgumentError
+      expect { WQ::Runner.new(StubHandler.new) }.to_not raise_error
+      expect { WQ::Runner.new(Object.new) }.to raise_error ArgumentError
     end
 
     it 'raises an error if the EM reactor is not running' do
-      runner = WQ::Runner.new(redis)
+      runner = WQ::Runner.new
       expect { runner.setup_reactor_hooks }.to raise_error(RuntimeError)
-    end
-
-    it 'passes redis to handlers from the event loop' do
-      handler = nil
-      em(EM_TIMEOUT) do
-        handler = StubHandler.new(false) do |redis_from_wq|
-          expect(redis_from_wq).to be(redis)
-          done
-        end
-        WQ::Runner.new(redis, handler)
-          .setup_reactor_hooks
-      end
-
-      expect(handler.call_count).to be 1
     end
 
     it 'reschedules succeeded handlers' do
@@ -37,7 +21,7 @@ RSpec.describe WQ::Runner, :wq do
         handler = StubHandler.new(true) do |*_|
           done if handler.call_count == 1
         end
-        WQ::Runner.new(redis, handler)
+        WQ::Runner.new(handler)
           .setup_reactor_hooks
       end
 
@@ -52,7 +36,7 @@ RSpec.describe WQ::Runner, :wq do
         end
         handler_under_test = StubHandler.new(false)
 
-        WQ::Runner.new(redis, control_handler, handler_under_test)
+        WQ::Runner.new(control_handler, handler_under_test)
           .setup_reactor_hooks
       end
 
@@ -68,7 +52,7 @@ RSpec.describe WQ::Runner, :wq do
         end
         handler_under_test = StubHandler.new(false)
 
-        WQ::Runner.new(redis, control_handler, handler_under_test)
+        WQ::Runner.new(control_handler, handler_under_test)
           .set_periodic_timer_interval(0)
           .setup_reactor_hooks
       end
@@ -85,7 +69,7 @@ RSpec.describe WQ::Runner, :wq do
         end
         handler_that_times_out = StubHandler.new(nil)
 
-        WQ::Runner.new(redis, control_handler, handler_that_times_out)
+        WQ::Runner.new(control_handler, handler_that_times_out)
           .set_periodic_timer_interval(0.01)
           .set_timeout(0)
           .setup_reactor_hooks
@@ -119,9 +103,9 @@ RSpec.describe WQ::Runner, :wq do
     attr_reader :call_count
     attr_reader :deferred
 
-    def handle_tick(redis)
+    def handle_tick
       @call_count += 1
-      @handler.call(redis) unless @handler.nil?
+      @handler.call if @handler
       @deferred
     end
   end

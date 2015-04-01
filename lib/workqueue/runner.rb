@@ -9,12 +9,11 @@ module WorkQueue
     DEFAULT_INTERVAL = 3 # seconds
     DEFERRED_TIMEOUT = 3 # seconds
 
-    def initialize(redis, *handlers)
+    def initialize(*handlers)
       handlers.each do |handler|
         raise ArgumentError, "must respont to handle_tick" unless handler.respond_to? :handle_tick
       end
 
-      @redis = redis
       @handlers = handlers
 
       @unscheduled_handlers = []
@@ -56,7 +55,7 @@ module WorkQueue
     # the @timedout_handlers array and not rescheduled.
     def schedule_handler(handler)
       scheduled_handler_cb = EM.Callback do
-        handler.handle_tick(@redis)
+        handler.handle_tick
           .timeout(@deferred_timeout, :timeout)
           .callback { schedule_handler(handler) }
           .errback do |*args|

@@ -31,8 +31,9 @@ RSpec.describe WQ::TaskSink, :wq do
     it 'returns a failed deferred if queue is empty' do
       em_hiredis_mock(replies) do |redis|
         sink = WQ::TaskSink.new(:queue_name)
+        sink.redis = redis
 
-        failed_result = sink.handle_tick(redis)
+        failed_result = sink.handle_tick
         errback_called = false
         failed_result.errback { errback_called = true }
         expect(errback_called). to be
@@ -49,8 +50,9 @@ RSpec.describe WQ::TaskSink, :wq do
         end
 
         sink = WQ::TaskSink.new(:queue_name)
+        sink.redis = redis
 
-        success_result = sink.handle_tick(redis)
+        success_result = sink.handle_tick
         callback_called = false
         success_result.callback { callback_called = true }
         expect(callback_called). to be
@@ -67,10 +69,12 @@ RSpec.describe WQ::TaskSink, :wq do
         end
 
         task_handler_called = false
-        WQ::TaskSink.new(:queue_name) do |handled_task|
+        sink = WQ::TaskSink.new(:queue_name) do |handled_task|
           expect(handled_task).to eql task
           task_handler_called = true
-        end.handle_tick(redis)
+        end
+        sink.redis = redis
+        sink.handle_tick
 
         expect(task_handler_called).to be
       end

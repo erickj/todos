@@ -22,6 +22,8 @@ RSpec.describe WQ::TaskMixin, :wq do
     expect(foo_task =~ foo_task).to be
   end
 
+  it 'compares to symbols in a case statement'
+
   context 'fields and build' do
 
     let(:field_values) do

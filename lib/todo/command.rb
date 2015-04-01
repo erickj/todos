@@ -7,3 +7,5 @@ end
 require 'todo/command/processor'
 require 'todo/command/task_type'
 require 'todo/command/create_todo'
+require 'todo/command/command_result'
+require 'todo/command/command_sink'

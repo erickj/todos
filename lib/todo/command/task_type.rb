@@ -3,5 +3,6 @@ module Todo::Command
     CREATE_TODO = :todo_create
     UPDATE_TODO = :todo_update
     DELETE_TODO = :todo_delete
+    NOOP_TODO   = :todo_noop
   end
 end

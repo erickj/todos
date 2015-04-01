@@ -1,4 +1,4 @@
-require 'workqueue/task_sink'
+require 'workqueue'
 
 module Todo::Command
 
@@ -14,20 +14,25 @@ module Todo::Command
     end
 
     private
-    def process_command(command_task)
+    def process_command(task)
       emit :process_command_begin, Time.now
 
-      processor = nil
-      case command_task
-      when TaskType::CREATE_TODO
-        processor = CreateTodo::Processor.new
-      else
-        raise ArgumentError, 'unknown task type'
-      end
+      processor = case task.task_type
+                  when Todo::Command::TaskType::CREATE_TODO
+                    CreateTodo::Processor.new
+                  when Todo::Command::TaskType::NOOP_TODO
+                    Class.new do
+                      include Todo::Command::Processor
+                      processes TaskType::NOOP_TODO
+                      def process_command_internal(*_); end
+                    end.new
+                  else
+                    raise ArgumentError, 'unknown task type %s'%task.task_type
+                  end
 
-      model = processor.process(task)
+      result = processor.process_command(task)
       emit :process_command_end, Time.now
-      emit :process_command_result, CommandResult.new(model.uuid, task)
+      emit :process_command_result, CommandResult.new(result, task)
     end
 
   end

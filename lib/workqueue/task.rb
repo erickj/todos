@@ -135,6 +135,12 @@ module WorkQueue
         self
       end
 
+      def enum(*enum_vals)
+        validate do |v|
+          raise 'invalid enum value %s'%v unless enum_vals.any? { |enum_val| enum_val == v }
+        end
+      end
+
       def validate(validator_proc=nil, &block)
         @validators ||= []
         @validators << validator_proc unless validator_proc.nil?

@@ -35,6 +35,7 @@ RSpec.describe WQ::TaskMixin, :wq do
       {
         :errand_list => [:bank, :shopping],
         :max_money => 100,
+        :currency => :dollar,
         :done_by => Time.now + 3600
       }
     end
@@ -44,6 +45,7 @@ RSpec.describe WQ::TaskMixin, :wq do
 
       field(:errand_list).default []
       field(:max_money).required.type Integer
+      field(:currency).enum :dollar, :gbp, :chf
       field(:done_by).type(Time).validate do |time|
         raise 'I don\'t have a time machine' unless time > Time.now
       end
@@ -88,6 +90,14 @@ RSpec.describe WQ::TaskMixin, :wq do
       expect { DoErrandsTask.build field_values }.to raise_error do |error|
         expect(error).to be_a WQ::TaskValidationError
         expect(error[:done_by].first).to be == 'I don\'t have a time machine'
+      end
+    end
+
+    it 'validates enums' do
+      field_values[:currency] = :canadian_dollar
+      expect { DoErrandsTask.build field_values }.to raise_error do |error|
+        expect(error).to be_a WQ::TaskValidationError
+        expect(error[:currency].first).to be =~ /^invalid enum value/
       end
     end
   end

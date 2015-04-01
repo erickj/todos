@@ -30,9 +30,10 @@ module Todo::Command
                     raise ArgumentError, 'unknown task type %s'%task.task_type
                   end
 
-      result = processor.process_command(task)
+      task_result = processor.process_command(task)
       emit :process_command_end, Time.now
-      emit :process_command_result, CommandResult.new(result, task)
+
+      publish(:todo_command_results, task_serializer.serialize(task_result))
     end
 
   end

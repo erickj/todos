@@ -14,7 +14,12 @@ module WorkQueue
     FAILURE = EM::DefaultDeferrable.new
     FAILURE.fail
 
-    attr_accessor :redis
+    attr_reader :redis
+
+    def redis=(redis)
+      @redis = redis
+      self.pubsub_redis = redis
+    end
 
     def handle_tick
       emit(:handle_tick_begin, Time.now)

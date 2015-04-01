@@ -1,3 +1,4 @@
+require 'dm-aggregates'
 require 'shared/task_context'
 require 'todo/command'
 
@@ -39,15 +40,31 @@ describe Todo::Command::CreateTodo::Command, :command do
       end.to raise_error ArgumentError, /^can not process command of type/
     end
 
-    it 'creates an owner if one does not exist' do
-      todo_template = processor.process_command subject
-      person = Todo::Model::Person.get!(1)
+    it 'completes successfully' do
+      task_result = processor.process_command subject
+      expect(task_result.is_success?).to be
+    end
 
-      expect(person).to eql todo_template.owner
+    it 'creates an owner if one does not exist' do
+      expect(Todo::Model::Person.count).to be 0
+
+      processor.process_command subject
+
+      expect(Todo::Model::Person.count).to be 1
+    end
+
+    it 'doesn\'t create an owner if one already exists' do
+      Todo::Model::Person.create :email => 'e@j.com'
+      expect(Todo::Model::Person.count).to be 1
+
+      processor.process_command subject
+
+      expect(Todo::Model::Person.count).to be 1
     end
 
     it 'creates a saved todo template with the correct title and description' do
-      todo_template = processor.process_command subject
+      task_result = processor.process_command subject
+      todo_template = Todo::Model::TodoTemplate.by_uuid! task_result.result_key
 
       expect(todo_template.saved?).to be
       expect(todo_template.dirty?).to be false

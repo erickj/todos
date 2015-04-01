@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'shared/model_examples'
 require 'todo/model'
 require 'uuidtools'
@@ -45,6 +46,25 @@ describe Todo::Model::TodoTemplate, :model do
 
     it 'should have a UUID' do
       expect(model.uuid).to be_a UUIDTools::UUID
+    end
+  end
+
+  context 'keys' do
+    it 'should be indexed on uuid' do
+      todo_templates = Todo::Model::TodoTemplate.all :uuid => model.uuid
+      expect(todo_templates.size).to be 1
+      expect(todo_templates.first).to eql model
+    end
+
+    it 'should be accessible via +by_uuid+' do
+      todo_template = Todo::Model::TodoTemplate.by_uuid model.uuid
+      expect(todo_template).to eql model
+    end
+
+    it 'should throw on +by_uuid!+ for missing models' do
+      expect do
+        Todo::Model::TodoTemplate.by_uuid! SecureRandom.uuid
+      end.to raise_error(/^missing TodoTemplate/)
     end
   end
 

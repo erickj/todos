@@ -23,6 +23,14 @@ module Todo
       before :valid?, :create_uuid
       after :create, :create_recurrence_rule
 
+      def self.by_uuid(uuid)
+        self.first :uuid => uuid
+      end
+
+      def self.by_uuid!(uuid)
+        self.by_uuid(uuid) || raise('missing TodoTemplate for uuid %s'%uuid)
+      end
+
       private
       def create_uuid
         self.uuid ||= SecureRandom.uuid

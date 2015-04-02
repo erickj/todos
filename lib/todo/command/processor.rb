@@ -11,7 +11,7 @@ module Todo
           raise ArgumentError, 'can not process command of type %s' % command.task_type
         end
         model = process_command_internal(command)
-        result_key = model.uuid rescue nil
+        result_key = model.uuid.to_s rescue nil
 
         WQ::TaskResult.create_from_task(command, :success, result_key)
       end

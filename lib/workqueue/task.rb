@@ -6,13 +6,15 @@ module WorkQueue
   class TaskValidationError < StandardError
     def initialize(field_errors = {})
       @field_errors = field_errors
-      super 'Invalid values for fields: %s'%@field_errors.map { |pair| pair[0] }.join(',')
+      super 'Invalid values for fields: %s'%[
+              @field_errors.map { |pair| [pair[0], pair[1].join(', ')] }.join(': '),
+            ]
     end
 
-    def error_for_field(name)
+    def errors_for_field(name)
       @field_errors[name]
     end
-    alias :[] :error_for_field
+    alias :[] :errors_for_field
   end
 
   module TaskMixin
@@ -131,12 +133,16 @@ module WorkQueue
       end
 
       def type(klass)
-        validate { |v| raise 'expected type %s'%klass unless v.is_a? klass }
+        validate do |v|
+          next if v.nil?
+          raise 'expected type %s but got %s'%[klass,v.class] unless v.is_a?(klass)
+        end
         self
       end
 
       def enum(*enum_vals)
         validate do |v|
+          next if v.nil?
           raise 'invalid enum value %s'%v unless enum_vals.any? { |enum_val| enum_val == v }
         end
       end

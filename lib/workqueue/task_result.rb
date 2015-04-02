@@ -17,6 +17,7 @@ module WorkQueue
       .default :success
 
     field(:result_key)
+      .type String
 
     def is_success?
       self.result == :success
@@ -24,12 +25,11 @@ module WorkQueue
 
     def self.create_from_task(task, result=success, result_key=nil)
       TaskResult.build({
-                         :original_task_uuid => task.uuid,
-                         :original_task_type => task.task_type,
-                         :result => result,
-                         :result_key => result_key
-                       })
+        :original_task_uuid => task.uuid,
+        :original_task_type => task.task_type,
+        :result => result,
+        :result_key => result_key
+      })
     end
-
   end
 end

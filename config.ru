@@ -22,16 +22,17 @@ unless Dir.exist?(ENV['RUN_DIR'])
 end
 
 require 'todo_app'
-require 'lib/api'
-require 'lib/mail_api'
+
+require 'lib/app/mail_api'
+require 'lib/app/web_api'
 
 Todo::App.start do |app|
 
   app.add_wq_event_handler Todo::Command::CommandSink.new
-  app.add_wq_event_handlers Todo::Api.workqueue_handlers
+  app.add_wq_event_handlers Todo::WebApi.workqueue_handlers
 #  app.add_wq_event_handlers Todo::MailApi.workqueue_handlers
 
-  app.map '/api', Todo::Api.new
+  app.map '/api', Todo::WebApi.new
 #  app.add_mapping '/mailapi', Todo::MailApi.new
 
 #  run(Rack::URLMap.new(

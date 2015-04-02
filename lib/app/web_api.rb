@@ -3,7 +3,7 @@ require 'todo/command'
 require 'todo/model'
 
 module Todo
-  class Api < Sinatra::Base
+  class WebApi < Sinatra::Base
 
     COMMAND_SOURCE = Todo::Command::CommandSource.new
 

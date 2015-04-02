@@ -11,7 +11,9 @@ module WorkQueue
 
     def initialize(*handlers)
       handlers.each do |handler|
-        raise ArgumentError, "must respont to handle_tick" unless handler.respond_to? :handle_tick
+        unless handler.respond_to? :handle_tick
+          raise ArgumentError, "%s must respont to handle_tick"%handler
+        end
       end
 
       @handlers = handlers

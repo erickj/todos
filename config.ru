@@ -23,6 +23,7 @@ end
 
 require 'todo_app'
 
+require 'lib/app/debug_api'
 require 'lib/app/mail_api'
 require 'lib/app/web_api'
 
@@ -32,8 +33,10 @@ Todo::App.start do |app|
   app.add_wq_event_handlers Todo::WebApi.workqueue_handlers
 #  app.add_wq_event_handlers Todo::MailApi.workqueue_handlers
 
+  app.map '/debug', Todo::DebugApi.new
+
   app.map '/api', Todo::WebApi.new
-#  app.add_mapping '/mailapi', Todo::MailApi.new
+  app.map '/mailapi', Todo::MailApi.new
 
 #  run(Rack::URLMap.new(
 #       app.web_root + "/api" => Todo::Api,

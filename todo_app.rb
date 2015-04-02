@@ -2,7 +2,9 @@ unless $LOAD_PATH.include? './lib'
   $LOAD_PATH.unshift './lib'
 end
 
+require 'rack'
 require 'data_mapper'
+
 require 'workqueue'
 require 'todo/model'
 
@@ -45,6 +47,8 @@ module Todo
           unless @app_mappings.nil?
             mappings = @app_mappings
             web_dispatch = Rack::Builder.app do
+              use Rack::CommonLogger
+
               mappings.each do |route, app|
                 map route do run app end
               end

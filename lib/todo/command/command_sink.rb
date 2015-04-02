@@ -33,7 +33,7 @@ module Todo::Command
       task_result = processor.process_command(task)
       emit :process_command_end, Time.now
 
-      publish(:todo_command_results, task_serializer.serialize(task_result))
+      publish(PUBSUB_RESULT_CHANNEL, task_serializer.serialize(task_result))
     end
 
   end

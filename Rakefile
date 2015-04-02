@@ -12,6 +12,10 @@ task :default => :bxspec
 
 desc "Run the app in development mode"
 task :run do
-  puts 'Starting server with shotgun, this is for development only!'
-  exec 'bundle exec shotgun --server=thin --port=8000 config.ru'
+  # can't use shotgun until I fix TodoApp.start
+#  puts 'Starting server with shotgun, this is for development only!'
+#  exec 'bundle exec shotgun --server=thin --port=8000 config.ru'
+
+  puts 'Starting server with `rackup config.ru`'
+  exec 'rackup config.ru'
 end

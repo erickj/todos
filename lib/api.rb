@@ -5,9 +5,15 @@ require 'todo/model'
 module Todo
   class Api < Sinatra::Base
 
+    COMMAND_SOURCE = Todo::Command::CommandSource.new
+
+    configure do
+      set :threaded, false
+    end
+
     class << self
       def workqueue_handlers
-        [ ]
+        [ COMMAND_SOURCE ]
       end
     end
 
@@ -23,12 +29,13 @@ module Todo
     put '/todo' do
       request.body.rewind
       todo_json = JSON.parse(request.body.read, :symbolize_names => true)
-      cmd = Todo::Command::CreateTodoCommand.build(
-        todo_json[:email],
-        todo_json[:title],
-        todo_json[:description])
-      todo = Todo::Command::CreateTodoCommandProcessor.new.process(cmd)
-      redirect request.fullpath + '/' + todo.id.to_s
+      cmd = Todo::Command::CreateTodo::Command.build({
+                                                       :owner_email => todo_json[:email],
+                                                       :title => todo_json[:title],
+                                                       :description => todo_json[:description]
+                                                     })
+      COMMAND_SOURCE << cmd
+      [202]
     end
 
     get '/todo/:id' do

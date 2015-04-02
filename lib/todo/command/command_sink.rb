@@ -17,6 +17,7 @@ module Todo::Command
     def process_command(task)
       emit :process_command_begin, Time.now
 
+      puts "Processing command: %s" % task.to_h
       processor = case task.task_type
                   when Todo::Command::TaskType::CREATE_TODO
                     CreateTodo::Processor.new

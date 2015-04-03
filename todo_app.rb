@@ -3,22 +3,16 @@ unless $LOAD_PATH.include? './lib'
 end
 
 require 'rack'
+require 'rack/lobster'
 require 'data_mapper'
-
 require 'workqueue'
 require 'todo/model'
 
-DataMapper::Logger.new($stdout, :debug)
-DataMapper.setup(:default, 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db');
-
-
-#DataMapper.auto_migrate!
-DataMapper
-  .finalize
-  .auto_upgrade!
-
 module Todo
   class App
+
+    DEFAULT_REDIS_URL = 'redis://localhost:6379/'
+    DEFAULT_DB_URL = 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db'
 
     def self.start &block
       self.new.start(&block)
@@ -34,62 +28,42 @@ module Todo
         config(&config_block)
       end
 
-      puts "start eventmachine"
+      configure_data_mapper
+
       redis = nil
       begin
         EM.run do
-          redis = EM::Hiredis.connect(@redis_url)
-          wq_handlers.each do |handler|
-            handler.redis = redis
-          end
-          WQ::Runner.new(*wq_handlers).setup_reactor_hooks
+          puts "starting eventmachine"
 
-          unless @app_mappings.nil?
-            mappings = @app_mappings
-            web_dispatch = Rack::Builder.app do
-              use Rack::CommonLogger
+          start_workqueue
+          start_rack_apps
 
-              mappings.each do |route, app|
-                map route do run app end
-              end
-            end
-            Rack::Server.start({
-                                 :app => web_dispatch,
-                                 :server => 'thin',
-                                 :Port => 8000,
-                                 :signals => false
-                               })
-          end
-
-          puts "EM running"
+          puts "eventmachine running"
         end
       rescue
         puts 'Error in EM.run loop:'
-        puts $!, $@, $!.backtrace.join("\n\t")
+        puts $!, $!.backtrace.join("\n\t")
+        exit 1
       ensure
         redis.close_connection unless redis.nil?
       end
     end
 
-    attr_reader :wq_handlers
+    def db_url
+      @db_url || DEFAULT_DB_URL
+    end
+
+    def redis_url
+      @redis_url || DEFAULT_REDIS_URL
+    end
+
+    def environment
+      :development
+    end
 
     def map(route, app)
-      @app_mappings ||= {}
-      @app_mappings[route] = app
-    end
-
-    def web_root=(root)
-      raise ArgumentError, "invalid web-root, must be a valid path" unless root.match(/\/$/)
-      @web_root = root
-    end
-
-    def web_root
-      @web_root || ""
-    end
-
-    def redis_url(url)
-      @redis_url = url
-      self
+      @rack_app_mappings ||= {}
+      @rack_app_mappings[route] = app
     end
 
     def add_wq_event_handler(handler)
@@ -98,10 +72,77 @@ module Todo
       self
     end
 
-    def add_wq_event_handlers(handlers)
-      @wq_handlers ||= []
-      @wq_handlers.concat(handlers)
-      self
+    def rack_config
+      @rack_config ||= {
+        :server => 'thin',
+        :Port => 8000,
+        :signals => false
+      }
+    end
+
+    private
+    def configure_data_mapper
+      puts 'configuring data_mapper'
+
+      DataMapper::Logger.new($stdout, :debug)
+
+      puts 'connecting datamapper :default -> %s' % db_url
+      DataMapper.setup(:default, db_url);
+
+      #DataMapper.auto_migrate!
+      DataMapper
+        .finalize
+        .auto_upgrade!
+      puts 'configured data_mapper'
+    end
+
+    def setup_redis_handlers
+      raise 'EM reactor must be running to connect to redis' unless EM.reactor_running?
+
+      puts 'connecting to redis at: %s' % redis_url
+      redis = EM::Hiredis.connect redis_url
+      puts 'connected to redis at: %s' % redis_url
+
+      puts 'assigning redis to handlers'
+      @wq_handlers.each do |handler|
+        handler.redis = redis
+      end
+    end
+
+    def start_workqueue
+      puts "starting workqueue"
+
+      setup_redis_handlers
+      WQ::Runner.new(*@wq_handlers).setup_reactor_hooks
+
+      puts "worqueue running"
+    end
+
+    def start_rack_apps
+      return if @rack_app_mappings.nil?
+
+      puts "starting rack apps"
+
+      # assign to local for reference inside the block
+      rack_app_mappings = @rack_app_mappings
+      web_dispatch = Rack::Builder.app do
+        use Rack::CommonLogger
+        use Rack::Lint
+
+        rack_app_mappings.each do |route, app|
+          puts 'adding rack app mapping for root: %s' % route
+          map(route) { run app }
+        end
+
+        map "/lobster" do
+          run Rack::Lobster.new
+        end
+      end
+
+      rack_config[:app] = web_dispatch
+      Rack::Server.start rack_config
+
+      puts "rack apps running"
     end
 
   end

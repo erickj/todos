@@ -30,15 +30,10 @@ require 'lib/app/web_api'
 Todo::App.start do |app|
 
   app.add_wq_event_handler Todo::Command::CommandSink.new
-  app.add_wq_event_handlers Todo::WebApi.workqueue_handlers
-#  app.add_wq_event_handlers Todo::MailApi.workqueue_handlers
+  Todo::WebApi.workqueue_handlers.each { |h| app.add_wq_event_handler h }
+  Todo::MailApi.workqueue_handlers.each { |h| app.add_wq_event_handler h }
 
-  app.map '/debug', Todo::DebugApi.new
-
-  app.map '/api', Todo::WebApi.new
-  app.map '/mailapi', Todo::MailApi.new
-
-#  run(Rack::URLMap.new(
-#       app.web_root + "/api" => Todo::Api,
-#       app.web_root + "/mailapi" => Todo::MailApi))
+  app.map '/debug'   , Todo::DebugApi.new
+  app.map '/api'     , Todo::WebApi.new
+  app.map '/mailapi' , Todo::MailApi.new
 end

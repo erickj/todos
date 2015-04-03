@@ -1,5 +1,5 @@
-require 'erb'
 require 'sinatra'
+require 'tilt/erb'
 require 'util/ize'
 
 module Todo
@@ -15,7 +15,8 @@ module Todo
         :request => url('request'),
         :request_env => url('request/env'),
         :request_paths => url('request/path'),
-        :params => url('params')
+        :params => url('params'),
+        :env => url('env')
       }
     end
 
@@ -47,6 +48,11 @@ module Todo
 
     get '/params' do
       pre = params.sort.map { |p| p.to_s }.join("\n")
+      render_erb :request, pre
+    end
+
+    get '/env' do
+      pre = ENV.sort.map { |pair| pair.to_s }.join("\n")
       render_erb :request, pre
     end
 

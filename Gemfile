@@ -1,6 +1,7 @@
 # A sample Gemfile
 source 'https://rubygems.org'
 
+gem 'log4r'
 gem 'thin'
 gem 'sinatra', '~>1.4.6'
 gem 'data_mapper'

@@ -5,11 +5,17 @@ end
 require 'rack'
 require 'rack/lobster'
 require 'data_mapper'
+
+require 'logging'
 require 'workqueue'
 require 'todo/model'
 
 module Todo
   class App
+
+    include Logging
+    loglevel :debug
+    set_as_parent_logger
 
     DEFAULT_REDIS_URL = 'redis://localhost:6379/'
     DEFAULT_DB_URL = 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db'
@@ -28,21 +34,22 @@ module Todo
         config(&config_block)
       end
 
+      configure_logging
       configure_data_mapper
 
       redis = nil
       begin
         EM.run do
-          puts "starting eventmachine"
+          log.debug "starting eventmachine"
 
           start_workqueue
           start_rack_apps
 
-          puts "eventmachine running"
+          log.info "eventmachine running"
         end
       rescue
-        puts 'Error in EM.run loop:'
-        puts $!, $!.backtrace.join("\n\t")
+        log.error 'Error in EM.run loop:'
+        log.error $!, $!.backtrace.join("\n\t")
         exit 1
       ensure
         redis.close_connection unless redis.nil?
@@ -81,56 +88,62 @@ module Todo
     end
 
     private
+    def configure_logging
+    end
+
     def configure_data_mapper
-      puts 'configuring data_mapper'
+      log.debug 'configuring data_mapper'
 
       DataMapper::Logger.new($stdout, :debug)
 
-      puts 'connecting datamapper :default -> %s' % db_url
+      log.info 'connecting datamapper :default -> %s' % db_url
       DataMapper.setup(:default, db_url);
 
+      log.debug 'running DataMapper::auto_upgrade!'
       #DataMapper.auto_migrate!
       DataMapper
         .finalize
         .auto_upgrade!
-      puts 'configured data_mapper'
+      log.debug 'configured data_mapper'
     end
 
     def setup_redis_handlers
       raise 'EM reactor must be running to connect to redis' unless EM.reactor_running?
 
-      puts 'connecting to redis at: %s' % redis_url
+      log.debug 'connecting to redis at: %s' % redis_url
       redis = EM::Hiredis.connect redis_url
-      puts 'connected to redis at: %s' % redis_url
+      log.info 'connected to redis at: %s' % redis_url
 
-      puts 'assigning redis to handlers'
+      log.debug 'assigning redis to handlers'
       @wq_handlers.each do |handler|
         handler.redis = redis
       end
     end
 
     def start_workqueue
-      puts "starting workqueue"
+      log.debug "starting workqueue"
 
       setup_redis_handlers
       WQ::Runner.new(*@wq_handlers).setup_reactor_hooks
 
-      puts "worqueue running"
+      log.info "worqueue running"
     end
 
     def start_rack_apps
       return if @rack_app_mappings.nil?
 
-      puts "starting rack apps"
+      log.debug "starting rack apps"
 
       # assign to local for reference inside the block
       rack_app_mappings = @rack_app_mappings
+      logger = log
+
       web_dispatch = Rack::Builder.app do
         use Rack::CommonLogger
         use Rack::Lint
 
         rack_app_mappings.each do |route, app|
-          puts 'adding rack app mapping for root: %s' % route
+          logger.info 'adding rack app mapping for root: %s' % route
           map(route) { run app }
         end
 
@@ -142,7 +155,7 @@ module Todo
       rack_config[:app] = web_dispatch
       Rack::Server.start rack_config
 
-      puts "rack apps running"
+      log.info "rack apps running"
     end
 
   end

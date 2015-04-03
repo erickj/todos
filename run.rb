@@ -1,10 +1,11 @@
+#!/bin/env ruby
+
 unless $LOAD_PATH.include? '.'
   $LOAD_PATH.unshift '.'
 end
 
 require 'rubygems'
 require 'bundler'
-require 'rack'
 
 Bundler.require
 

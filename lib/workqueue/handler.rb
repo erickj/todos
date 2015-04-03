@@ -7,6 +7,7 @@ module WorkQueue
   class Handler
     include EventEmitter
     include Publisher
+    include Logging
 
     SUCCESS = EM::DefaultDeferrable.new
     SUCCESS.succeed
@@ -22,6 +23,7 @@ module WorkQueue
     end
 
     def handle_tick
+#      log.debug "handle tick"
       emit(:handle_tick_begin, Time.now)
       result = handle_tick_internal
       emit(:handle_tick_end, Time.now)

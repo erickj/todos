@@ -48,8 +48,7 @@ module Todo
           log.info "eventmachine running"
         end
       rescue
-        log.error 'Error in EM.run loop:'
-        log.error $!, $!.backtrace.join("\n\t")
+        log_fatal 'EM reactor loop', $!
         exit 1
       ensure
         redis.close_connection unless redis.nil?

@@ -6,6 +6,8 @@ module WorkQueue
   # EventMachine run loop
   class Runner
 
+    include Logging
+
     DEFAULT_INTERVAL = 3 # seconds
     DEFERRED_TIMEOUT = 3 # seconds
 
@@ -56,16 +58,16 @@ module WorkQueue
     # clear out dead handlers. Once timed out a handler is placed into
     # the @timedout_handlers array and not rescheduled.
     def schedule_handler(handler)
+      curried_errback = method(:handle_error_on_tick_handler).to_proc.curry.(handler)
+
       scheduled_handler_cb = EM.Callback do
-        handler.handle_tick
-          .timeout(@deferred_timeout, :timeout)
-          .callback { schedule_handler(handler) }
-          .errback do |*args|
-          if args[0] == :timeout
-            @timedout_handlers << handler
-          else
-            @unscheduled_handlers << handler
-          end
+        begin
+          handler.handle_tick
+            .timeout(@deferred_timeout, :timeout)
+            .callback { schedule_handler(handler) }
+            .errback(&curried_errback)
+        rescue
+          log_error 'scheduled %s#handle_tick'%handler.class, $!
         end
       end
 
@@ -78,6 +80,16 @@ module WorkQueue
 
       tmp.each do |handler|
         schedule_handler(handler)
+      end
+    end
+
+    def handle_error_on_tick_handler(handler, *args)
+      if args[0] == :timeout
+        log.error "handler +handle_tick+ deferred timedout, permanently removing from WQ::Runner scheduling"
+        @timedout_handlers << handler
+      else
+        log.debug "handler +handle_tick+ errored, temporarily unscheduling from WQ::Runner scheduling"
+        @unscheduled_handlers << handler
       end
     end
   end

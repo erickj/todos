@@ -6,7 +6,7 @@ Log4r::Logger.global.level = Log4r::ALL
 
 module Logging
 
-  LEVELS = [:debug, :info, :warn, :error, :fatal]
+  LEVELS = [:debug, :info, :warn, :error, :fatal, :all]
 
   def self.included(base)
     base.extend ClassMethods
@@ -16,9 +16,22 @@ module Logging
     self.class.logger
   end
 
+  def log_error(context_name, error, lvl=:error)
+    log.send lvl, "caught <%s> in <%s>:\n\t %s"%[error.class, context_name, error.message]
+    log.send lvl, "stacktrace:\n\t" + error.backtrace.join("\n\t")
+  end
+
+  def log_fatal(context_name, error)
+    log_error context_name, error, :fatal
+  end
+
   module ClassMethods
 
-    def loglevel(level)
+    def loglevel(level=nil)
+      if level.nil?
+        return @loglevel || :all
+      end
+
       raise 'unknown log level %s'%level unless LEVELS.any? { |lvl| lvl == level }
       @loglevel = level
     end
@@ -41,7 +54,7 @@ module Logging
 
     private
     def log4r_level
-      case @loglevel
+      case loglevel
       when :debug
         Log4r::DEBUG
       when :info
@@ -52,6 +65,8 @@ module Logging
         Log4r::ERROR
       when :fatal
         Log4r::FATAL
+      when :all
+        Log4r::ALL
       else
         raise ArgumentError, 'unknown log level %s'%@loglevel
       end

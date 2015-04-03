@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'em-hiredis'
 
+require 'logging'
+
 require 'workqueue/event_emitter'
 require 'workqueue/publisher'
 require 'workqueue/runner'

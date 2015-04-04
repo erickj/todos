@@ -27,13 +27,15 @@ module Logging
 
   module ClassMethods
 
+    @@parent_logger_name = nil
+
     def setup_parent_logger(lvl=:all, output=nil)
-      raise 'parent logger already set to %s' % @parent_logger_name if @parent_logger_name
-      @parent_logger_name = log4r_logger_name
-      logger.info "set %s as parent logger"%@parent_logger_name
+      raise 'parent logger already set to %s' % @@parent_logger_name if @@parent_logger_name
+      @@parent_logger_name = log4r_logger_name
 
       loglevel lvl
       add_logger_output output unless output.nil?
+      logger.info "set %s as parent logger"%@@parent_logger_name
     end
 
     def loglevel(level=nil)
@@ -88,8 +90,8 @@ module Logging
 
     def log4r_logger_name
       logger_name = (self.name.nil? ? "<nil>" : self.name).downcase
-      if @parent_logger_name && logger_name != @parent_logger_name
-        logger_name = [@parent_logger_name, logger_name].join '::'
+      if @@parent_logger_name && logger_name != @@parent_logger_name
+        logger_name = [@@parent_logger_name, logger_name].join '::'
       end
       logger_name
     end

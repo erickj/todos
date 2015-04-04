@@ -112,8 +112,8 @@ module Todo
       redis = EM::Hiredis.connect redis_url
       log.info 'connected to redis at: %s' % redis_url
 
-      log.debug 'assigning redis to handlers'
       @wq_handlers.each do |handler|
+        log.info 'assigning redis to WQ handler: %s' % handler
         handler.redis = redis
       end
     end

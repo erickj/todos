@@ -43,6 +43,7 @@ module WorkQueue
       raise "EM reactor not running, did you call EM.run?" unless EM.reactor_running?
 
       @handlers.each do |handler|
+        log.info 'scheduling WQ handler: %s' % handler
         schedule_handler(handler)
       end
 
@@ -67,7 +68,6 @@ module WorkQueue
             .timeout(@deferred_timeout, :timeout)
             .callback { schedule_handler(handler) }
             .errback { |*args| handle_error_on_deferred(handler, deferred, *args) }
-          log.debug 'handle_tick returned defered: %s/%s' % [handler, deferred]
         rescue
           log_error 'scheduled %s#handle_tick'%handler.class, $!
         end
@@ -89,7 +89,6 @@ module WorkQueue
       reason = args[0]
       case reason
       when :nodata
-        log.debug "handler +handle_tick+ had no data, temporarily unscheduling"
         @unscheduled_handlers << handler
       when :timeout
         log.error "%s/%s timed out, permanently unscheduling" % [handler, deferred]

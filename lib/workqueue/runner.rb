@@ -8,7 +8,10 @@ module WorkQueue
 
     include Logging
 
-    DEFAULT_INTERVAL = 3 # seconds
+    # Interval between rescheduling unscheduled handlers
+    DEFAULT_INTERVAL = 0.1 # seconds
+
+    # Timeout until +handle_tick+ deferred raises a timeout errors
     DEFERRED_TIMEOUT = 3 # seconds
 
     def initialize(*handlers)

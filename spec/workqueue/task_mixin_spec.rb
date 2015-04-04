@@ -23,8 +23,6 @@ RSpec.describe WQ::TaskMixin, :wq do
     expect(foo_task =~ foo_task).to be
   end
 
-  it 'compares to symbols in a case statement'
-
   it 'should have a UUID' do
     expect(UUIDTools::UUID.parse task.uuid).to be_a UUIDTools::UUID
   end

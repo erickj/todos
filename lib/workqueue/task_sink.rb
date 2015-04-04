@@ -14,8 +14,10 @@ module WorkQueue
       deferred_result = EM::DefaultDeferrable.new
       redis.lpop(@queue_name) do |lpop_result|
         if lpop_result.nil?
-          deferred_result.fail
+          log.debug {"redis#lpop_result is nil"}
+          deferred_result.fail(:nodata)
         else
+          log.debug {"redis#lpop_result: %s" % lpop_result}
           process_raw_task_from_queue(lpop_result)
           deferred_result.succeed
         end

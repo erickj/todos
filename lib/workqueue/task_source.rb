@@ -29,7 +29,7 @@ module WorkQueue
 
     # override Handler#handle_tick_internal
     def handle_tick_internal
-      return Handler::FAILURE if @pending_queue.empty?
+      return false if @pending_queue.empty?
 
       tmp_queue = nil
       @lock.synchronize do
@@ -40,7 +40,7 @@ module WorkQueue
       until tmp_queue.empty?
         redis.rpush(@queue_name, tmp_queue.pop)
       end
-      Handler::SUCCESS
+      true
     end
   end
 end

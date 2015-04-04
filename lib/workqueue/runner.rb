@@ -21,7 +21,7 @@ module WorkQueue
       @handlers = handlers
 
       @unscheduled_handlers = []
-      @timedout_handlers = []
+      @banned_handlers = []
       @periodic_timer_interval = DEFAULT_INTERVAL
       @deferred_timeout = DEFERRED_TIMEOUT
     end
@@ -56,16 +56,15 @@ module WorkQueue
     # paused for +@periodic_timer_interval+ seconds+ before being
     # rescheduled. A timeout is added to each deferred so that we can
     # clear out dead handlers. Once timed out a handler is placed into
-    # the @timedout_handlers array and not rescheduled.
+    # the @banned_handlers array and not rescheduled.
     def schedule_handler(handler)
-      curried_errback = method(:handle_error_on_tick_handler).to_proc.curry.(handler)
-
       scheduled_handler_cb = EM.Callback do
         begin
-          handler.handle_tick
+          deferred = handler.handle_tick
             .timeout(@deferred_timeout, :timeout)
             .callback { schedule_handler(handler) }
-            .errback(&curried_errback)
+            .errback { |*args| handle_error_on_deferred(handler, deferred, *args) }
+          log.debug 'handle_tick returned defered: %s/%s' % [handler, deferred]
         rescue
           log_error 'scheduled %s#handle_tick'%handler.class, $!
         end
@@ -83,13 +82,18 @@ module WorkQueue
       end
     end
 
-    def handle_error_on_tick_handler(handler, *args)
-      if args[0] == :timeout
-        log.error "handler +handle_tick+ deferred timedout, permanently removing from WQ::Runner scheduling"
-        @timedout_handlers << handler
-      else
-        log.debug "handler +handle_tick+ errored, temporarily unscheduling from WQ::Runner scheduling"
+    def handle_error_on_deferred(handler, deferred, *args)
+      reason = args[0]
+      case reason
+      when :nodata
+        log.debug "handler +handle_tick+ had no data, temporarily unscheduling"
         @unscheduled_handlers << handler
+      when :timeout
+        log.error "%s/%s timed out, permanently unscheduling" % [handler, deferred]
+        @banned_handlers << handler
+      else
+        log.error "handler +handle_tick+ errorred with unknown reason: '%s'; unscheduling permanently"%reason
+        @banned_handlers << handler
       end
     end
   end

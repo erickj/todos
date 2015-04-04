@@ -9,12 +9,6 @@ module WorkQueue
     include Publisher
     include Logging
 
-    SUCCESS = EM::DefaultDeferrable.new
-    SUCCESS.succeed
-
-    FAILURE = EM::DefaultDeferrable.new
-    FAILURE.fail
-
     attr_reader :redis
 
     def redis=(redis)
@@ -23,11 +17,13 @@ module WorkQueue
     end
 
     def handle_tick
-#      log.debug "handle tick"
       emit(:handle_tick_begin, Time.now)
       result = handle_tick_internal
       emit(:handle_tick_end, Time.now)
-      result
+
+      result.is_a?(EM::Deferrable) ?
+        result :
+        create_deferred_result(!!result)
     end
 
     protected
@@ -35,8 +31,19 @@ module WorkQueue
       TaskSerializer.instance
     end
 
+    # Returns either a boolean or a deferred. If if a deferred is returned then
+    # +handle_tick+ returns the deferred directly. Otherwise if a boolean is
+    # returned then true indicates success or false for failure. This will be
+    # converted to the relevant deferred response.
     def handle_tick_internal
-      SUCCESS
+      create_deferred_result
+    end
+
+    private
+    def create_deferred_result(is_success=true, error_reason=:nodata)
+      result = EM::DefaultDeferrable.new
+      is_success ? result.succeed : result.fail(error_reason)
+      result
     end
   end
 end

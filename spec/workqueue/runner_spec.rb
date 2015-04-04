@@ -15,7 +15,7 @@ RSpec.describe WQ::Runner, :wq do
       expect { runner.setup_reactor_hooks }.to raise_error(RuntimeError)
     end
 
-    it 'reschedules succeeded handlers' do
+    it 'should reschedule succeeded handlers' do
       handler = nil
       em(EM_TIMEOUT) do
         handler = StubHandler.new(true) do |*_|
@@ -28,13 +28,13 @@ RSpec.describe WQ::Runner, :wq do
       expect(handler.call_count).to be 2
     end
 
-    it 'unschedules handlers that return false' do
+    it 'should unschedules handlers with unkown failures' do
       control_handler, handler_under_test = nil
       em(EM_TIMEOUT) do
         control_handler = StubHandler.new(true) do |*_|
           done if control_handler.call_count == 1
         end
-        handler_under_test = StubHandler.new(false)
+        handler_under_test = StubHandler.new(false, :unknown_error)
 
         WQ::Runner.new(control_handler, handler_under_test)
           .setup_reactor_hooks
@@ -44,13 +44,13 @@ RSpec.describe WQ::Runner, :wq do
       expect(control_handler.call_count).to be 2
     end
 
-    it 'reschedules failed handlers' do
+    it 'should reschedule failed handlers with code :nodata' do
       control_handler, handler_under_test = nil
       em(EM_TIMEOUT) do
         control_handler = StubHandler.new(true) do |*_|
           done if control_handler.call_count == 1
         end
-        handler_under_test = StubHandler.new(false)
+        handler_under_test = StubHandler.new(false, :nodata)
 
         WQ::Runner.new(control_handler, handler_under_test)
           .set_periodic_timer_interval(0)
@@ -61,10 +61,10 @@ RSpec.describe WQ::Runner, :wq do
       expect(control_handler.call_count).to be 2
     end
 
-    it 'does not reschedule timed out handlers' do
+    it 'should not reschedule timed out handlers' do
       control_handler, handler_that_times_out = nil
       em(EM_TIMEOUT) do
-        control_handler = StubHandler.new(false) do |*_|
+        control_handler = StubHandler.new(true) do |*_|
           done if control_handler.call_count == 2
         end
         handler_that_times_out = StubHandler.new(nil)
@@ -89,11 +89,12 @@ RSpec.describe WQ::Runner, :wq do
 
   class StubHandler
 
-    def initialize(should_succeed=true, &block)
+    # @param [boolean|nil] should_succeed, nil indicates timeout
+    def initialize(should_succeed=true, failure_code = nil, &block)
       @deferred = EM::DefaultDeferrable.new
 
       unless should_succeed.nil?
-        should_succeed ? @deferred.succeed : @deferred.fail
+        should_succeed ? @deferred.succeed : @deferred.fail(failure_code)
       end
 
       @handler = block || nil

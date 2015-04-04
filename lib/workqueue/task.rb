@@ -72,6 +72,10 @@ module WorkQueue
       hash
     end
 
+    def to_logger
+      "<%s; type: %s; uuid: %s>"%[self.class, task_type, uuid]
+    end
+
     private
     def field_value(name)
       @field_values[name] || self.class.field_definitions[name].get_default

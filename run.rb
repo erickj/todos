@@ -30,9 +30,12 @@ require 'lib/app/web_api'
 
 Todo::App.start do |app|
 
-  app.add_wq_event_handler Todo::Command::CommandSink.new
-  Todo::WebApi.workqueue_handlers.each { |h| app.add_wq_event_handler h }
-  Todo::MailApi.workqueue_handlers.each { |h| app.add_wq_event_handler h }
+  wq_event_handlers = []
+  wq_event_handlers << Todo::Command::CommandSink.new
+  wq_event_handlers.concat Todo::WebApi.workqueue_handlers
+  wq_event_handlers.concat Todo::MailApi.workqueue_handlers
+
+  wq_event_handlers.each { |h| app.add_wq_event_handler h }
 
   app.map '/debug'   , Todo::DebugApi.new
   app.map '/api'     , Todo::WebApi.new

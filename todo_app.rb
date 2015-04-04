@@ -3,7 +3,6 @@ unless $LOAD_PATH.include? './lib'
 end
 
 require 'rack'
-require 'rack/lobster'
 require 'data_mapper'
 
 require 'logging'
@@ -143,10 +142,6 @@ module Todo
         rack_app_mappings.each do |route, app|
           logger.info 'adding rack app mapping for root: %s' % route
           map(route) { run app }
-        end
-
-        map "/lobster" do
-          run Rack::Lobster.new
         end
       end
 

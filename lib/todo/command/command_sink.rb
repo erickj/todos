@@ -9,12 +9,15 @@ module Todo::Command
   # * :process_command_result(UUID, Task)
   class CommandSink < WQ::TaskSink
 
+    include Logging
+
     def initialize
       super(QUEUE_NAME, &method(:process_command))
     end
 
     private
     def process_command(task)
+      log.info { "processing command: %s" % task.to_logger }
       emit :process_command_begin, Time.now
 
       processor = case task.task_type

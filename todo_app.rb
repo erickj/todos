@@ -14,8 +14,7 @@ module Todo
   class App
 
     include Logging
-    loglevel :debug
-    set_as_parent_logger
+    setup_parent_logger(:debug, :stdout)
 
     DEFAULT_REDIS_URL = 'redis://localhost:6379/'
     DEFAULT_DB_URL = 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db'

@@ -56,9 +56,9 @@ RSpec.describe Todo::Command::CommandSink, :command do
       dummy_redis.rpush(Todo::Command::QUEUE_NAME, serialize_task(noop_task))
       subject.handle_tick
 
-      expect(publishes[Todo::Command::PUBSUB_RESULT_CHANNEL].size).to be 1
+      expect(publishes[WQ::TASK_RESULT_CHANNEL].size).to be 1
 
-      result = deserialize_task publishes[Todo::Command::PUBSUB_RESULT_CHANNEL].first
+      result = deserialize_task publishes[WQ::TASK_RESULT_CHANNEL].first
       expect(result).to be =~ :task_result
     end
   end

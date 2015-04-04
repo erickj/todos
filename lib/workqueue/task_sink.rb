@@ -30,7 +30,11 @@ module WorkQueue
     def process_raw_task_from_queue(raw_task)
       task = task_serializer.deserialize(raw_task)
       raise ArgumentError, 'not a task' unless task.is_task?
-      @task_handler.call(task) unless @task_handler.nil?
+      task_result = @task_handler.call(task) unless @task_handler.nil?
+
+      if task_result
+        publish(WQ::TASK_RESULT_CHANNEL, task_serializer.serialize(task_result))
+      end
     end
 
   end

@@ -1,7 +1,6 @@
 module Todo
   module Command
     QUEUE_NAME = :todo_command_queue
-    PUBSUB_RESULT_CHANNEL = :todo_command_results
   end
 end
 

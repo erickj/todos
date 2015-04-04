@@ -15,3 +15,7 @@ require 'workqueue/task_source'
 
 # Provide a short alias
 WQ = WorkQueue
+
+module WQ
+  TASK_RESULT_CHANNEL = :wq_task_results
+end

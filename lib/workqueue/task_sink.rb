@@ -33,6 +33,7 @@ module WorkQueue
       task_result = @task_handler.call(task) unless @task_handler.nil?
 
       if task_result
+        log.info 'publishing result %s to %s' % [task_result, WQ::TASK_RESULT_CHANNEL]
         publish(WQ::TASK_RESULT_CHANNEL, task_serializer.serialize(task_result))
       end
     end

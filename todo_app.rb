@@ -13,10 +13,13 @@ module Todo
   class App
 
     include Logging
-    setup_parent_logger(:debug, :stdout)
+    setup_parent_logger(:info, :stdout)
 
     DEFAULT_REDIS_URL = 'redis://localhost:6379/'
     DEFAULT_DB_URL = 'sqlite3:///' + ENV['RUN_DIR'] + '/todo.db'
+
+    attr_accessor :log_level
+    attr_accessor :web_port, :web_host
 
     def self.start &block
       self.new.start(&block)
@@ -31,6 +34,8 @@ module Todo
       if block_given?
         config(&config_block)
       end
+
+      self.class.loglevel self.log_level
 
       configure_logging
       configure_data_mapper
@@ -73,13 +78,23 @@ module Todo
     def add_wq_event_handler(handler)
       @wq_handlers ||= []
       @wq_handlers << handler
+
+      add_redis_consumer(handler) if handler.is_a? WQ::RedisConsumer
+
+      self
+    end
+
+    def add_redis_consumer(redis_consumer)
+      @redis_consumers ||= []
+      @redis_consumers << redis_consumer
       self
     end
 
     def rack_config
       @rack_config ||= {
         :server => 'thin',
-        :Port => 8000,
+        :Port => self.web_port,
+        :Host => self.web_host,
         :signals => false
       }
     end
@@ -91,7 +106,7 @@ module Todo
     def configure_data_mapper
       log.debug 'configuring data_mapper'
 
-      DataMapper::Logger.new($stdout, :debug)
+      DataMapper::Logger.new($stdout, log_level)
 
       log.info 'connecting datamapper :default -> %s' % db_url
       DataMapper.setup(:default, db_url);
@@ -104,23 +119,23 @@ module Todo
       log.debug 'configured data_mapper'
     end
 
-    def setup_redis_handlers
+    def setup_redis_consumers
       raise 'EM reactor must be running to connect to redis' unless EM.reactor_running?
 
       log.debug 'connecting to redis at: %s' % redis_url
       redis = EM::Hiredis.connect redis_url
       log.info 'connected to redis at: %s' % redis_url
 
-      @wq_handlers.each do |handler|
-        log.info 'assigning redis to WQ handler: %s' % handler
-        handler.redis = redis
+      @redis_consumers.each do |consumer|
+        log.info 'assigning redis to consumer: %s' % consumer
+        consumer.redis = redis
       end
     end
 
     def start_workqueue
       log.debug "starting workqueue"
 
-      setup_redis_handlers
+      setup_redis_consumers
       WQ::Runner.new(*@wq_handlers).setup_reactor_hooks
 
       log.info "worqueue running"

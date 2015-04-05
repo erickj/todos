@@ -3,8 +3,10 @@ require 'em-hiredis'
 
 require 'logging'
 
+require 'workqueue/redis_consumer'
 require 'workqueue/event_emitter'
 require 'workqueue/publisher'
+require 'workqueue/subscriber'
 require 'workqueue/runner'
 require 'workqueue/task'
 require 'workqueue/task_result'

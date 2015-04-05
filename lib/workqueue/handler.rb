@@ -5,16 +5,11 @@ module WorkQueue
   # * handle_tick_begin(Time.now) - before handling each tick
   # * handle_tick_end(Time.now) - upon completing handling each tick
   class Handler
+    include RedisConsumer
     include EventEmitter
     include Publisher
+
     include Logging
-
-    attr_reader :redis
-
-    def redis=(redis)
-      @redis = redis
-      self.pubsub_redis = redis
-    end
 
     def handle_tick
       emit(:handle_tick_begin, Time.now)
@@ -24,6 +19,11 @@ module WorkQueue
       result.is_a?(EM::Deferrable) ?
         result :
         create_deferred_result(!!result)
+    end
+
+    def redis=(redis)
+      @redis = redis
+      self.pubsub_redis = redis
     end
 
     protected

@@ -62,7 +62,7 @@ Bundler.require
 # load ENV variables from .environment
 if File.exists? ".environment"
   File.readlines(".environment").map { |line| line.rstrip.split(/=/) }.each do |pair|
-    ENV[pair[0]] = ENV[pair[1]]
+    ENV[pair[0]] = pair[1]
   end
 end
 

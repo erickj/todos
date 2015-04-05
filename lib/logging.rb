@@ -46,7 +46,10 @@ module Logging
       raise 'unknown log level %s'%level unless LEVELS.any? { |lvl| lvl == level }
       @loglevel = level
 
-      logger.level = log4r_level if @logger_created
+      if @logger_created
+        logger.level = log4r_level
+        logger.info 'changed to log level: %s' % @loglevel
+      end
     end
 
     def add_logger_output(output=:stdout)

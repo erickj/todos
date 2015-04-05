@@ -72,8 +72,8 @@ module WorkQueue
       hash
     end
 
-    def to_logger
-      "<%s; type: %s; uuid: %s>"%[self.class, task_type, uuid]
+    def to_s
+      "#<Task:%s; uuid: %s>"%[task_type, uuid]
     end
 
     private

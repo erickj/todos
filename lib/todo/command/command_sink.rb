@@ -17,7 +17,7 @@ module Todo::Command
 
     private
     def process_command(task)
-      log.info { "processing command: %s" % task.to_logger }
+      log.info { "processing command: %s" % task }
       emit :process_command_begin, Time.now
 
       processor = case task.task_type

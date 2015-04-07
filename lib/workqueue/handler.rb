@@ -12,6 +12,8 @@ module WorkQueue
     include Logging
 
     def handle_tick
+      return create_deferred_result(false, :noredis) unless @redis
+
       emit(:handle_tick_begin, Time.now)
       result = handle_tick_internal
       emit(:handle_tick_end, Time.now)

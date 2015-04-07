@@ -90,6 +90,8 @@ module WorkQueue
       case reason
       when :nodata
         @unscheduled_handlers << handler
+      when :noredis
+        @unscheduled_handlers << handler
       when :timeout
         log.error "%s/%s timed out, permanently unscheduling" % [handler, deferred]
         @banned_handlers << handler

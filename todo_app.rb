@@ -123,12 +123,30 @@ module Todo
       raise 'EM reactor must be running to connect to redis' unless EM.reactor_running?
 
       log.debug 'connecting to redis at: %s' % redis_url
-      redis = EM::Hiredis.connect redis_url
-      log.info 'connected to redis at: %s' % redis_url
 
-      @redis_consumers.each do |consumer|
-        log.info 'assigning redis to consumer: %s' % consumer
-        consumer.redis = redis
+      redis_deferrable = EM::DefaultDeferrable.new
+      redis = EM::Hiredis.connect redis_url
+
+      redis.on :connected do
+        log.info 'connected to redis at: %s' % redis_url
+        redis_deferrable.succeed
+      end
+      redis_deferrable.timeout 5, :timeout
+
+      redis_deferrable.errback do |reason|
+        case reason
+        when :timeout
+          raise 'failed to connect to redis in 5 seconds'
+        else
+          raise 'connectng to redis failed for unknown reason'
+        end
+      end
+
+      redis_deferrable.callback do
+        @redis_consumers.each do |consumer|
+          log.info 'assigning redis to consumer: %s' % consumer
+          consumer.redis = redis
+        end
       end
     end
 

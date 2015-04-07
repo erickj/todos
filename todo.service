@@ -1,0 +1,32 @@
+# Installation:
+# `# useradd -r --uid 400 --shell /sbin/nologin -d /opt/dotildone dotildone`
+# `# mkdir -p /opt/dotildone`
+# `# chown -R dotildone:dotildone /opt/dotildone`
+# `# cat <<EOS > /etc/rsyslog.d/dotildone.conf
+# # Log dotildone generated log messages to file
+# :programname, isequal, "dotildone" /var/log/dotildone.log
+#
+# # comment out the following line to allow CLOUDINIT messages through.
+# # Doing so means you'll also get CLOUDINIT messages in /var/log/syslog
+# & ~
+
+[Unit]
+Description=Todo Service
+After=network.target
+Wants=redis.service
+
+[Service]
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=dotildone
+SyslogFacility=local0
+
+WorkingDirectory=/opt/dotildone/todos
+ExecStart=/opt/dotildone/todos/run.rb --log-level info -H 0.0.0.0 -p 8000
+Restart=always
+
+User=dotildone
+Group=dotildone
+
+[Install]
+WantedBy=multi-user.target

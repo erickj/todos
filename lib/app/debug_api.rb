@@ -16,7 +16,8 @@ module Todo
         :request_env => url('request/env'),
         :request_paths => url('request/path'),
         :params => url('params'),
-        :env => url('env')
+        :env => url('env'),
+        :mail_form => url('form/mail')
       }
     end
 
@@ -38,22 +39,26 @@ module Todo
       pre = paths.sort.map do |pair|
         pair.to_s
       end.join "\n"
-      render_erb :request, pre
+      render_erb :request_path, pre
     end
 
     get '/request/env' do
       pre = request.env.sort.map { |e| e.to_s }.join("\n")
-      render_erb :request, pre
+      render_erb :request_env, pre
     end
 
     get '/params' do
       pre = params.sort.map { |p| p.to_s }.join("\n")
-      render_erb :request, pre
+      render_erb :params, pre
     end
 
     get '/env' do
       pre = ENV.sort.map { |pair| pair.to_s }.join("\n")
-      render_erb :request, pre
+      render_erb :env, pre
+    end
+
+    get '/form/mail' do
+      render_form :mail_post, File.read('./spec/example_data/mandrill_demo_events.txt')
     end
 
     private
@@ -62,6 +67,14 @@ module Todo
             :nav => @nav_route_map.map { |name, url| [Ize.titleize(name), url] },
             :subtitle => subtitle.to_s.capitalize,
             :pre => preformatted_text
+          }
+    end
+
+    def render_form(subtitle, postbody)
+      erb :form, :locals => {
+            :nav => @nav_route_map.map { |name, url| [Ize.titleize(name), url] },
+            :subtitle => subtitle.to_s.capitalize,
+            :postbody => postbody
           }
     end
 
@@ -123,6 +136,16 @@ __END__
   #content {
     padding: 0 10px;
   }
+
+  form textarea {
+    display: block;
+    width: 700px;
+    height: 500px;
+  }
+
+  form input {
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -150,3 +173,9 @@ __END__
 
 @@ pre
 <pre><%= pre %></pre>
+
+@@ form
+<form method="POST" action="/mailapi/mail" enctype="application/x-www-form-urlencoded">
+  <textarea name="mandrill_events"><%= postbody %></textarea>
+  <input type="submit" value="Submit"/>
+</form>

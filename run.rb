@@ -8,7 +8,6 @@ require 'rubygems'
 require 'bundler'
 
 require 'optparse'
-require 'lib/logging'
 require 'yaml'
 
 options = {
@@ -41,8 +40,9 @@ OptionParser.new do |opts|
   end
 
   # Logging verbosity
-  opts.on('-l', '--log-level [LEVEL]', Logging::LEVELS,
-          'Choose logging verbosity level (%s)'%Logging::LEVELS.join(',')) do |l|
+  log_levels = [:debug, :info, :warn, :error, :fatal]
+  opts.on('-l', '--log-level [LEVEL]', log_levels,
+          'Choose logging verbosity level (%s)'%log_levels.join(',')) do |l|
     options[:log_level] = l
   end
 
@@ -58,6 +58,8 @@ OptionParser.new do |opts|
 end.parse!
 
 Bundler.require
+
+require 'lib/logging'
 
 # load ENV variables from .environment
 if File.exists? ".environment"

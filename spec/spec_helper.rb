@@ -6,6 +6,8 @@ require 'dm-transactions'
 require 'database_cleaner'
 require './lib/logging'
 
+Dir.glob('./spec/shared/**/*.rb').each { |f| require f }
+
 RSpec.configuration.add_setting :debug_db,
                                 :default => false
 

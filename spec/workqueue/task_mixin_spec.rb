@@ -41,7 +41,7 @@ RSpec.describe WQ::TaskMixin, :wq do
     class DoErrandsTask
       include WQ::TaskMixin
 
-      field(:errand_list).default []
+      field(:errand_list).collection_of(Symbol).default []
       field(:max_money).required.type Integer
       field(:currency).enum :dollar, :gbp, :chf
       field(:done_by).type(Time).validate do |time|
@@ -80,6 +80,14 @@ RSpec.describe WQ::TaskMixin, :wq do
       expect { DoErrandsTask.build field_values }.to raise_error do |error|
         expect(error).to be_a WQ::TaskValidationError
         expect(error[:max_money].first).to be =~ /^expected type/
+      end
+    end
+
+    it 'validates collection of' do
+      field_values[:errand_list] = ["not a symbol"]
+      expect { DoErrandsTask.build field_values }.to raise_error do |error|
+        expect(error).to be_a WQ::TaskValidationError
+        expect(error[:errand_list].first).to be == 'expected collection values to be a Symbol'
       end
     end
 

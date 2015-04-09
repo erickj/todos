@@ -144,6 +144,16 @@ module WorkQueue
         self
       end
 
+      def collection_of(klass)
+        validate do |v|
+          next if v.nil?
+          raise 'expected collection to respond to #all?' unless v.respond_to? :all?
+          unless v.all? { |val| val.is_a? klass }
+            raise 'expected collection values to be a %s' % klass.name
+          end
+        end
+      end
+
       def enum(*enum_vals)
         validate do |v|
           next if v.nil?

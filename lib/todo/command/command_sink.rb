@@ -20,20 +20,8 @@ module Todo::Command
       log.info { "processing command: %s" % task }
       emit :process_command_begin, Time.now
 
-      processor = case task.task_type
-                  when Todo::Command::TaskType::CREATE_TODO
-                    CreateTodo::Processor.new
-                  when Todo::Command::TaskType::NOOP_TODO
-                    Class.new do
-                      include Todo::Command::Processor
-                      processes TaskType::NOOP_TODO
-                      def process_command_internal(*_); end
-                    end.new
-                  else
-                    raise ArgumentError, 'unknown task type %s'%task.task_type
-                  end
+      task_result = Processor.processor_for(task).process_command task
 
-      task_result = processor.process_command(task)
       emit :process_command_end, Time.now
       task_result
     end

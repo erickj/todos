@@ -39,19 +39,22 @@ module Todo
       def handle_create_todo_result(task_result)
         log.info 'sending mail for created todo result: %s' % task_result.original_task_uuid
         todo_tpl = Model::TodoTemplate.by_uuid! task_result.result_key
+        owner = todo_tpl.owner
+        most_recent_todos = owner.todo_templates.all(:limit => 10, :order => [ :created_at.desc ])
+
         log.debug { todo_tpl }
-        send_mail todo_tpl
+        send_mail owner.email, todo_tpl.title, most_recent_todos
       end
 
-      def send_mail(todo_tpl)
+      def send_mail(to, subject, todos)
         m = Mandrill::API.new
         message = {
-          :subject=> "Re: %s" % todo_tpl.title,
-          :from_name=> "domail",
-          :text=>"Saved your todo:\n\n%s" % todo_tpl.description,
+          :subject=> "Re: %s" % subject,
+          :from_name=> "Do Til Done",
+          :text=>"Your most recent todos:\n\n%s" % todos.map { |tpl| '* ' + tpl.title }.join("\n"),
           :to=>[
             {
-              :email=> ENV['OVERRIDE_EMAIL_RECIPIENT'],
+              :email=> ENV['OVERRIDE_EMAIL_RECIPIENT'] || to,
               :name=> "Recipient1"
             }
           ],

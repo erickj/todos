@@ -20,6 +20,11 @@ module Todo
       #   src https://github.com/datamapper/dm-core/blob/master/lib/dm-core/associations/relationship.rb
       belongs_to :owner, 'Person', :child_key => :owner_id
 
+      # Many-to-many Relationships
+      #   doc http://datamapper.org/docs/associations.html
+      has n, :collaborator_assignments
+      has n, :collaborators, 'Person', :through => :collaborator_assignments, :via => :person
+
       before :valid?, :create_uuid
       after :create, :create_recurrence_rule
 

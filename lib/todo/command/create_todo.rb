@@ -14,6 +14,10 @@ module Todo
           .required
           .type String
 
+        field(:collaborator_emails)
+          .default([])
+          .collection_of String
+
         field(:title)
           .required
           .type String
@@ -30,11 +34,18 @@ module Todo
         # overrides
         protected
         def process_command_internal(command)
-          owner = Model::Person.first_or_create(:email => command.owner_email)
-
           fields = command.to_h
+
+          owner = Model::Person.first_or_create(:email => command.owner_email)
           fields.delete :owner_email
           fields[:owner] = owner
+
+          fields[:collaborators] = []
+          command.collaborator_emails.each do |collab_email|
+            fields[:collaborators] << Model::Person.first_or_create(:email => collab_email)
+          end
+          fields.delete :collaborator_emails
+
           Model::TodoTemplate.create(fields)
         end
       end

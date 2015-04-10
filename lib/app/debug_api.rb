@@ -17,7 +17,8 @@ module Todo
         :request_paths => url('request/path'),
         :params => url('params'),
         :env => url('env'),
-        :mail_form => url('form/mail')
+        :mail_form => url('form/mail_task'),
+        :put_form => url('form/put_task')
       }
     end
 
@@ -57,8 +58,12 @@ module Todo
       render_erb :env, pre
     end
 
-    get '/form/mail' do
-      render_form :mail_post, File.read('./spec/example_data/mandrill_demo_events.txt')
+    get '/form/mail_task' do
+      render_form :mail_form, :mail_post, File.read('./spec/example_data/mandrill_demo_events.txt')
+    end
+
+    get '/form/put_task' do
+      render_form :put_form, :http_put, File.read('./spec/example_data/todo_put.txt')
     end
 
     private
@@ -70,8 +75,8 @@ module Todo
           }
     end
 
-    def render_form(subtitle, postbody)
-      erb :form, :locals => {
+    def render_form(form_name, subtitle, postbody)
+      erb form_name, :locals => {
             :nav => @nav_route_map.map { |name, url| [Ize.titleize(name), url] },
             :subtitle => subtitle.to_s.capitalize,
             :postbody => postbody
@@ -174,8 +179,15 @@ __END__
 @@ pre
 <pre><%= pre %></pre>
 
-@@ form
+@@ mail_form
 <form method="POST" action="/mailapi/mail" enctype="application/x-www-form-urlencoded">
   <textarea name="mandrill_events"><%= postbody %></textarea>
+  <input type="submit" value="Submit"/>
+</form>
+
+@@ put_form
+<form method="POST" action="/api/todo" enctype="application/x-www-form-urlencoded">
+  <input type="hidden" value="PUT" name="_method"/>
+  <textarea name="events"><%= postbody %></textarea>
   <input type="submit" value="Submit"/>
 </form>

@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <style type="text/css">
+      <%= globals.css_style %>
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>
+          <h1>Do Til Done</h1>
+        </td>
+        <td>
+          <h2><a href="#">Your Todos</a></h2>
+        </td>
+      </tr>
+    </table>
+
+    <%= yield %>
+
+    <%= render_partial :recent_todos_list %>
+
+    <table>
+      <tr>
+        <td>unsubscribe</td>
+      </tr>
+    </table>
+  </body>
+</html>

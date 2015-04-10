@@ -1,6 +1,7 @@
 require 'json'
 require 'todo/command'
 require 'todo/model'
+require 'uri'
 
 module Todo
   class WebApi < Sinatra::Base
@@ -27,14 +28,17 @@ module Todo
     end
 
     put '/todo' do
-      request.body.rewind
-      todo_json = JSON.parse(request.body.read, :symbolize_names => true)
-      cmd = Todo::Command::CreateTodo::Command.build({
-                                                       :owner_email => todo_json[:email],
-                                                       :title => todo_json[:title],
-                                                       :description => todo_json[:description]
-                                                     })
-      COMMAND_SOURCE << cmd
+      puts params.to_yaml
+
+      todo_events_json = JSON.parse(URI.decode(params[:events]), :symbolize_names => true)
+      todo_events_json.each do |todo_json|
+        cmd = Todo::Command::CreateTodo::Command.build({
+                                                         :owner_email => todo_json[:email],
+                                                         :title => todo_json[:title],
+                                                         :description => todo_json[:description]
+                                                       })
+        COMMAND_SOURCE << cmd
+      end
       [202]
     end
 

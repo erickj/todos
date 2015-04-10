@@ -1,0 +1,7 @@
+<table class="recent_todos">
+  <% globals.person.most_recent_todos.each do |todo| %>
+    <tr>
+      <td><%= todo.title %></td>
+    </tr>
+  <% end %>
+</table>

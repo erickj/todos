@@ -26,6 +26,11 @@ module Todo
         self.by_uuid(uuid) || raise('missing Person for uuid %s'%uuid)
       end
 
+      def most_recent_todos(limit=10)
+        limit = [limit, 50].min
+        self.todo_templates.all(:limit => limit, :order => [ :created_at.desc ])
+      end
+
       private
       def create_uuid
         self.uuid ||= SecureRandom.uuid

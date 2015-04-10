@@ -171,6 +171,7 @@ module Todo
       web_dispatch = Rack::Builder.app do
         use Rack::CommonLogger
         use Rack::Lint
+        use Rack::MethodOverride
 
         rack_app_mappings.each do |route, app|
           logger.info 'adding rack app mapping for root: %s' % route

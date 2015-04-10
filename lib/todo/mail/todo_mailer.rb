@@ -3,6 +3,7 @@ require 'workqueue'
 require 'logging'
 require 'todo/command'
 require 'todo/model'
+require 'todo/view/mailer_view'
 
 module Todo
   module Mail
@@ -40,26 +41,26 @@ module Todo
         log.info 'sending mail for created todo result: %s' % task_result.original_task_uuid
         todo_tpl = Model::TodoTemplate.by_uuid! task_result.result_key
         owner = todo_tpl.owner
-        most_recent_todos = owner.todo_templates.all(:limit => 10, :order => [ :created_at.desc ])
 
-        log.debug { todo_tpl }
-        send_mail owner.email, todo_tpl.title, most_recent_todos
+        view = View::MailerView.new Command::TaskType::CREATE_TODO, todo_tpl, owner
+
+        send_mail owner.email, todo_tpl.title, view
       end
 
-      def send_mail(to, subject, todos)
+      def send_mail(to, subject, view)
         m = Mandrill::API.new
         message = {
-          :subject=> "Re: %s" % subject,
-          :from_name=> "Do Til Done",
-          :text=>"Your most recent todos:\n\n%s" % todos.map { |tpl| '* ' + tpl.title }.join("\n"),
-          :to=>[
+          :subject => "Re: %s" % subject,
+          :from_name => "Do Til Done",
+          :text => view.generate_txt,
+          :to => [
             {
               :email=> ENV['OVERRIDE_EMAIL_RECIPIENT'] || to,
               :name=> "Recipient1"
             }
           ],
-#          :html=>"<html><h1>Hi <strong>message</strong>, how are you?</h1></html>",
-          :from_email=>ENV['FROM_EMAIL']
+          :html => view.generate_html,
+          :from_email => ENV['FROM_EMAIL']
         }
         m.messages.send message
       end

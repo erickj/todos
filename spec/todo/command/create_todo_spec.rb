@@ -6,17 +6,22 @@ describe Todo::Command::CreateTodo::Command, :command do
 
   include_context 'a task'
 
-  subject do Todo::Command::CreateTodo::Command.build({
-                                                        :owner_email => 'e@j.com',
-                                                        :title => 'a title',
-                                                        :description => 'a description'
-                                                      })
-  end
+  let(:data) {{
+                :owner_email => 'e@j.com',
+                :title => 'a title',
+                :description => 'a description',
+                :collaborator_emails => [
+                  'a@collab.com', 'b@collab.com'
+                ]
+              }}
+
+  subject { Todo::Command::CreateTodo::Command.build data }
 
   it 'has a builder method' do
     expect(subject.owner_email).to eql 'e@j.com'
     expect(subject.title).to eql 'a title'
     expect(subject.description).to eql 'a description'
+    expect(subject.collaborator_emails).to eql ['a@collab.com', 'b@collab.com']
   end
 
   it 'has task type CREATE_TODO' do
@@ -48,6 +53,7 @@ describe Todo::Command::CreateTodo::Command, :command do
     it 'creates an owner if one does not exist' do
       expect(Todo::Model::Person.count).to be 0
 
+      data[:collaborator_emails] = []
       processor.process_command subject
 
       expect(Todo::Model::Person.count).to be 1
@@ -57,6 +63,7 @@ describe Todo::Command::CreateTodo::Command, :command do
       Todo::Model::Person.create :email => 'e@j.com'
       expect(Todo::Model::Person.count).to be 1
 
+      data[:collaborator_emails] = []
       processor.process_command subject
 
       expect(Todo::Model::Person.count).to be 1
@@ -70,6 +77,20 @@ describe Todo::Command::CreateTodo::Command, :command do
       expect(todo_template.dirty?).to be false
       expect(todo_template.description).to eql 'a description'
       expect(todo_template.title).to eql 'a title'
+    end
+
+    context 'when collaborators are in the command' do
+      it 'should create collaborators' do
+        Todo::Model::Person.create :email => 'e@j.com'
+        expect(Todo::Model::Person.count).to be 1
+
+        task_result = processor.process_command subject
+        todo_template = Todo::Model::TodoTemplate.by_uuid! task_result.result_key
+
+        expect(Todo::Model::Person.count).to be 3
+        expect(todo_template.collaborators[0].email).to be == 'a@collab.com'
+        expect(todo_template.collaborators[1].email).to be == 'b@collab.com'
+      end
     end
   end
 end

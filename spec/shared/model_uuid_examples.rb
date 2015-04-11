@@ -1,6 +1,8 @@
 require 'uuidtools'
 
-shared_examples 'a UUID model' do
+RSpec.shared_examples 'a UUID model' do
+
+  it_behaves_like 'a model task result hash'
 
   context 'UUID properties' do
     it 'should have a UUID' do
@@ -29,5 +31,4 @@ shared_examples 'a UUID model' do
       end.to raise_error(Regexp.new('^missing %s'%klass.name.split('::').last))
     end
   end
-
 end

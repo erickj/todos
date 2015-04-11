@@ -19,6 +19,7 @@ module Todo
       #   doc http://datamapper.org/docs/associations.html
       #   src https://github.com/datamapper/dm-core/blob/master/lib/dm-core/associations/relationship.rb
       belongs_to :owner, 'Person', :child_key => :owner_id
+      belongs_to :creator, 'Person', :child_key => :creator_id, :index => true
 
       # Many-to-many Relationships
       #   doc http://datamapper.org/docs/associations.html
@@ -26,6 +27,7 @@ module Todo
       has n, :collaborators, 'Person', :through => :collaborator_assignments, :via => :person
 
       before :valid?, :create_uuid
+      before :valid?, :set_creator
       after :create, :create_recurrence_rule
 
       def self.by_uuid(uuid)
@@ -39,6 +41,10 @@ module Todo
       private
       def create_uuid
         self.uuid ||= SecureRandom.uuid
+      end
+
+      def set_creator
+        self.creator ||= self.owner
       end
 
       def create_recurrence_rule

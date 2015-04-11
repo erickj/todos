@@ -15,6 +15,7 @@ module Todo
       #   doc http://datamapper.org/docs/associations.html
       #   src https://github.com/datamapper/dm-core/blob/master/lib/dm-core/associations/relationship.rb
       has n, :todo_templates, :child_key => :owner_id
+      has n, :created_todos, 'TodoTemplate', :child_key => :creator_id
 
       before :valid?, :create_uuid
 

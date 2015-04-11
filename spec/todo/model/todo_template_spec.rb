@@ -55,6 +55,10 @@ describe Todo::Model::TodoTemplate, :model do
       DataMapper::Model.raise_on_save_failure = false
     end
 
+    it 'should have a creator', :x do
+      expect(subject.creator).to eql owner
+    end
+
     it 'should have an owner' do
       expect(subject.owner).to eql owner
     end
@@ -138,8 +142,30 @@ describe Todo::Model::TodoTemplate, :model do
         :title => 'A fantastically important TODO',
         :description => 'Get all my stuff done!',
         :created_at => subject.created_at,
-        :owner_id => subject.owner_id
+        :owner_id => subject.owner_id,
+        :creator_id => subject.owner_id
       }.to_json)
+    end
+  end
+
+  context 'creator is not the owner' do
+
+    let(:creator) { Todo::Model::Person.create :email => 'creator.%d@j.com' % rand(0..100000) }
+
+    let!(:creators_todo) do
+      data[:creator] = creator
+      Todo::Model::TodoTemplate.create data
+    end
+
+    it 'should not be created by the owner' do
+      expect(creator).to_not eql owner
+      expect(creators_todo.creator).to eql creator
+      expect(creators_todo.owner).to eql owner
+    end
+
+    it 'should be indexed on creator' do
+      todo = Todo::Model::TodoTemplate.first :creator => creator
+      expect(todo).to eql creators_todo
     end
   end
 end

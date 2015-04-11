@@ -64,5 +64,13 @@ describe Todo::Model::Person, :model do
       expect(subject.todo_templates.size).to be 1
       expect(subject.dirty?).to be
     end
+
+    it 'should have many created templates' do
+      expect(subject.created_todos).to be_an Array
+
+      subject.created_todos << Todo::Model::TodoTemplate.new
+      expect(subject.created_todos.size).to be 1
+      expect(subject.dirty?).to be
+    end
   end
 end

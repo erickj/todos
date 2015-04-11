@@ -2,7 +2,7 @@ require 'securerandom'
 require 'todo/model'
 require 'uuidtools'
 
-describe Todo::Model::TodoTemplate, :model do
+RSpec.describe Todo::Model::TodoTemplate, :model do
 
   it_behaves_like 'a model'
   it_behaves_like 'a UUID model'

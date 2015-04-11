@@ -2,7 +2,7 @@ require 'dm-aggregates'
 require 'shared/task_context'
 require 'todo/command'
 
-describe Todo::Command::CreateTodo::Command, :command do
+RSpec.describe Todo::Command::CreateTodo::Command, :command do
 
   include_context 'a task'
 

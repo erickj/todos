@@ -1,7 +1,7 @@
 require 'shared/model_examples'
 require 'todo/model'
 
-describe Todo::Model::RecurrenceRule, :model do
+RSpec.describe Todo::Model::RecurrenceRule, :model do
 
   it_behaves_like 'a model'
 

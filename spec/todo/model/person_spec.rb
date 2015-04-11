@@ -1,7 +1,7 @@
 require 'shared/model_examples'
 require 'todo/model'
 
-describe Todo::Model::Person, :model do
+RSpec.describe Todo::Model::Person, :model do
 
   it_behaves_like 'a model'
   it_behaves_like 'a UUID model'

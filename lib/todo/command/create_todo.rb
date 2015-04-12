@@ -36,17 +36,33 @@ module Todo
         def process_command_internal(command)
           fields = command.to_h
 
-          owner = Model::Person.first_or_create(:email => command.owner_email)
+          new_users = []
+
+          owner = Model::Person.first :email => command.owner_email
+          if owner.nil?
+            owner = Model::Person.create :email => command.owner_email
+            new_users << owner
+          end
           fields.delete :owner_email
           fields[:owner] = owner
 
           fields[:collaborators] = []
-          command.collaborator_emails.each do |collab_email|
-            fields[:collaborators] << Model::Person.first_or_create(:email => collab_email)
+          command.collaborator_emails.each do |email|
+            collaborator = Model::Person.first :email => email
+            if collaborator.nil?
+              collaborator = Model::Person.create :email => email
+              new_users << collaborator
+            end
+            fields[:collaborators] << collaborator
           end
           fields.delete :collaborator_emails
 
-          Model::TodoTemplate.create(fields)
+          todo_template = Model::TodoTemplate.create(fields)
+
+          WQ::TaskResult.create_success_result command, {
+            :new_users => new_users.map { |u| Model.model_to_task_result_hash u },
+            :todo_template => Model.model_to_task_result_hash(todo_template)
+          }
         end
       end
     end

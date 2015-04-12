@@ -40,8 +40,8 @@ RSpec.describe Todo::Command::CommandSink, :command do
     end
   end
 
-  context 'pubsub' do
-    it 'publishes TaskResult to the Command::PUBSUB_RESULT_CHANNEL' do
+  context 'pubsub', :x do
+    it 'publishes TaskResult to the WQ::TASK_RESULT_CHANNEL' do
       publishes = {}
       dummy_redis_replies[:publish] = lambda do |channel, value|
         publishes[channel] ||= []

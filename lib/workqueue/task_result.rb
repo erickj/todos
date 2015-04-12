@@ -4,31 +4,38 @@ module WorkQueue
 
     task_type :task_result
 
-    field(:original_task_type)
+    field(:original_task)
       .required
-      .type Symbol
+      .type TaskMixin
 
-    field(:original_task_uuid)
-      .required
-      .validate { |uuid| raise 'value is not a UUID' unless !!UUIDTools::UUID.parse(uuid) }
-
-    field(:result)
-      .enum(:success, :fail)
+    field(:result_status)
+      .enum(:success, :error)
       .default :success
 
-    field(:result_key)
+    field(:result)
+      .default(nil)
+
+    field(:error)
+      .default(nil)
       .type String
 
     def is_success?
-      self.result == :success
+      self.result_status == :success
     end
 
-    def self.create_from_task(task, result=success, result_key=nil)
+    def self.create_success_result(original_task, result={})
       TaskResult.build({
-        :original_task_uuid => task.uuid,
-        :original_task_type => task.task_type,
-        :result => result,
-        :result_key => result_key
+        :original_task => original_task,
+        :result_status => :success,
+        :result => result
+      })
+    end
+
+    def self.create_error_result(original_task, error='')
+      TaskResult.build({
+        :original_task => original_task,
+        :result_status => :error,
+        :error => error
       })
     end
   end

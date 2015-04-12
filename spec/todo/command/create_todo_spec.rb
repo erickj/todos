@@ -54,9 +54,13 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
       expect(Todo::Model::Person.count).to be 0
 
       data[:collaborator_emails] = []
-      processor.process_command subject
+      task_result = processor.process_command subject
 
       expect(Todo::Model::Person.count).to be 1
+
+      expect(task_result.result[:new_users].size).to be 1
+      expect(Todo::Model.task_result_hash_to_model task_result.result[:new_users].first)
+        .to be == Todo::Model::Person.first(:email => 'e@j.com')
     end
 
     it 'doesn\'t create an owner if one already exists' do
@@ -64,14 +68,15 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
       expect(Todo::Model::Person.count).to be 1
 
       data[:collaborator_emails] = []
-      processor.process_command subject
+      task_result = processor.process_command subject
 
       expect(Todo::Model::Person.count).to be 1
+      expect(task_result.result[:new_users]).to be_empty
     end
 
     it 'creates a saved todo template with the correct title and description' do
       task_result = processor.process_command subject
-      todo_template = Todo::Model::TodoTemplate.by_uuid! task_result.result_key
+      todo_template = Todo::Model.task_result_hash_to_model task_result.result[:todo_template]
 
       expect(todo_template.saved?).to be
       expect(todo_template.dirty?).to be false
@@ -85,11 +90,17 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
         expect(Todo::Model::Person.count).to be 1
 
         task_result = processor.process_command subject
-        todo_template = Todo::Model::TodoTemplate.by_uuid! task_result.result_key
+        todo_template = Todo::Model.task_result_hash_to_model task_result.result[:todo_template]
 
         expect(Todo::Model::Person.count).to be 3
         expect(todo_template.collaborators[0].email).to be == 'a@collab.com'
         expect(todo_template.collaborators[1].email).to be == 'b@collab.com'
+
+        expect(task_result.result[:new_users].size).to be 2
+        expect(Todo::Model.task_result_hash_to_model task_result.result[:new_users][0])
+          .to be == todo_template.collaborators[0]
+        expect(Todo::Model.task_result_hash_to_model task_result.result[:new_users][1])
+          .to be == todo_template.collaborators[1]
       end
     end
   end

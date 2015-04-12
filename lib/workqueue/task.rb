@@ -29,6 +29,10 @@ module WorkQueue
       @task_type || self.class.task_type
     end
 
+    def result_type
+      [:result_type, task_type].join('_').intern
+    end
+
     def is_task?
       true
     end
@@ -104,7 +108,7 @@ module WorkQueue
         @field_definitions.has_key? name
       end
 
-      def build(field_values)
+      def build(field_values, task_type=nil)
         task = self.allocate
 
         validation_errors = {}
@@ -120,6 +124,9 @@ module WorkQueue
         end
 
         task.field_values = field_values
+
+        task.task_type = task_type if task_type
+
         task
       end
     end

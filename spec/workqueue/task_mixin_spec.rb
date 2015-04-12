@@ -13,6 +13,10 @@ RSpec.describe WQ::TaskMixin, :wq do
     expect(task.task_type).to be :default
   end
 
+  it 'has a result type' do
+    expect(task.result_type).to be :result_type_default
+  end
+
   it 'is =~ equal to its type' do
     foo_task = WQ::Task.new(:foo)
     expect(foo_task =~ :foo).to be

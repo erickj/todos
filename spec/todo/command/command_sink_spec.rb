@@ -59,7 +59,7 @@ RSpec.describe Todo::Command::CommandSink, :command do
       expect(publishes[WQ::TASK_RESULT_CHANNEL].size).to be 1
 
       result = deserialize_task publishes[WQ::TASK_RESULT_CHANNEL].first
-      expect(result).to be =~ :task_result
+      expect(result).to be =~ :result_type_todo_noop
     end
   end
 end

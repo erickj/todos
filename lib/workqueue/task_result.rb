@@ -28,7 +28,7 @@ module WorkQueue
         :original_task => original_task,
         :result_status => :success,
         :result => result
-      })
+      }, original_task.result_type)
     end
 
     def self.create_error_result(original_task, error='')
@@ -36,7 +36,7 @@ module WorkQueue
         :original_task => original_task,
         :result_status => :error,
         :error => error
-      })
+      }, original_task.result_type)
     end
   end
 end

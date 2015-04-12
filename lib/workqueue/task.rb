@@ -17,6 +17,14 @@ module WorkQueue
     alias :[] :errors_for_field
   end
 
+  module Tasks
+    class << self
+      def result_type(task_type)
+        [:result_type, task_type].join('_').intern
+      end
+    end
+  end
+
   module TaskMixin
 
     def self.included(base)
@@ -30,7 +38,7 @@ module WorkQueue
     end
 
     def result_type
-      [:result_type, task_type].join('_').intern
+      WQ::Tasks.result_type task_type
     end
 
     def is_task?

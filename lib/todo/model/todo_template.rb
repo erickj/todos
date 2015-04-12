@@ -7,6 +7,7 @@ module Todo
 
       property :id, Serial
       property :uuid, UUID, :unique_index => true, :required => true
+      property :slug, String, :unique_index => true, :required => true
       property :state, Enum[:todo, :done], :default => :todo, :index => true
       property :title, String
       property :description, Text
@@ -27,6 +28,7 @@ module Todo
       has n, :collaborators, 'Person', :through => :collaborator_assignments, :via => :person
 
       before :valid?, :create_uuid
+      before :valid?, :create_slug
       before :valid?, :set_creator
       after :create, :create_recurrence_rule
 
@@ -41,6 +43,10 @@ module Todo
       private
       def create_uuid
         self.uuid ||= SecureRandom.uuid
+      end
+
+      def create_slug
+        self.slug ||= SecureRandom.urlsafe_base64 10
       end
 
       def set_creator

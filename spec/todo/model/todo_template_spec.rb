@@ -47,6 +47,10 @@ RSpec.describe Todo::Model::TodoTemplate, :model do
       todos = Todo::Model::TodoTemplate.all :state => :todo
       expect(todos.first).to eql subject
     end
+
+    it 'should have a slug' do
+      expect(subject.slug).to be_a String
+    end
   end
 
   context 'associations' do
@@ -138,6 +142,7 @@ RSpec.describe Todo::Model::TodoTemplate, :model do
       expect(subject.to_json).to eql({
         :id => 1,
         :uuid => subject.uuid.to_s,
+        :slug => subject.slug,
         :state => 'todo',
         :title => 'A fantastically important TODO',
         :description => 'Get all my stuff done!',

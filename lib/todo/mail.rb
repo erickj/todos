@@ -1,0 +1,1 @@
+require 'todo/mail/emailer'

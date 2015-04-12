@@ -56,6 +56,8 @@ module Logging
       case output
       when :stdout
         logger.add Log4r::Outputter.stdout
+      when :stderr
+        logger.add Log4r::Outputter.stderr
       else
         raise 'unknown output %s' % output
       end

@@ -4,16 +4,6 @@ RSpec.describe Todo::Mail::Emailer, :mail do
 
   let(:stub_adapter) { Todo::Mail::Adapter::Fake.new }
 
-  class View
-    def initialize(render_results={})
-      @render_results = render_results
-    end
-
-    def render(type)
-      @render_results[type]
-    end
-  end
-
   around(:each) do |example|
     default_adapter = Todo::Mail::Emailer.mail_adapter
     Todo::Mail::Emailer.mail_adapter stub_adapter
@@ -43,7 +33,10 @@ RSpec.describe Todo::Mail::Emailer, :mail do
     end
 
     it 'sets the body' do
-      email_builder.body(View.new :txt => 'a txt body', :html => '<html>body</html>').send
+      email_builder
+        .body_txt('a txt body')
+        .body_html('<html>body</html>')
+        .send
       expect(stub_adapter.email_info[:body][:txt]).to eql 'a txt body'
       expect(stub_adapter.email_info[:body][:html]).to eql '<html>body</html>'
     end

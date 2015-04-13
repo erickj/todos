@@ -42,21 +42,24 @@ module Todo
           self
         end
 
-        def body(view)
-          @body_view = view
+        def body_txt(body_txt)
+          @body_txt = body_txt
+          self
+        end
+
+        def body_html(body_html)
+          @body_html = body_html
           self
         end
 
         def send
-          html = @body_view.render(:html) rescue ''
-          txt = @body_view.render(:txt) rescue ''
           @mail_adapter.send_mail({
                               :subject => @subject,
                               :to => @to,
                               :reply_to => @reply_to,
                               :body => {
-                                :html => html,
-                                :txt => txt
+                                :html => @body_html,
+                                :txt => @body_txt
                               }
                             })
         end

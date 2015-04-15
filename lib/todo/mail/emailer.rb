@@ -53,6 +53,7 @@ module Todo
         end
 
         def send
+          raise 'missing To address' unless @to
           @mail_adapter.send_mail({
                               :subject => @subject,
                               :to => @to,

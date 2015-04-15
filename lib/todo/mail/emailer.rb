@@ -73,7 +73,8 @@ module Todo
         attr_reader :email_info
 
         def send_mail(email_info)
-          @email_info = email_info
+          @email_info ||= []
+          @email_info << email_info
         end
       end
 

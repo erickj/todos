@@ -19,17 +19,17 @@ RSpec.describe Todo::Mail::Emailer, :mail do
 
     it 'sets the subject' do
       email_builder.to('e@j.com').subject('a subject line').send
-      expect(stub_adapter.email_info[:subject]).to eql 'a subject line'
+      expect(stub_adapter.email_info.first[:subject]).to eql 'a subject line'
     end
 
     it 'sets the reply_to' do
       email_builder.to('e@j.com').reply_to('foo@bar.com').send
-      expect(stub_adapter.email_info[:reply_to]).to eql 'foo@bar.com'
+      expect(stub_adapter.email_info.first[:reply_to]).to eql 'foo@bar.com'
     end
 
     it 'sets the to' do
       email_builder.to('foo@bar.com', 'bar@foo.com').send
-      expect(stub_adapter.email_info[:to]).to eql ['foo@bar.com', 'bar@foo.com']
+      expect(stub_adapter.email_info.first[:to]).to eql ['foo@bar.com', 'bar@foo.com']
     end
 
     it 'sets the body' do
@@ -38,8 +38,8 @@ RSpec.describe Todo::Mail::Emailer, :mail do
         .body_txt('a txt body')
         .body_html('<html>body</html>')
         .send
-      expect(stub_adapter.email_info[:body][:txt]).to eql 'a txt body'
-      expect(stub_adapter.email_info[:body][:html]).to eql '<html>body</html>'
+      expect(stub_adapter.email_info.first[:body][:txt]).to eql 'a txt body'
+      expect(stub_adapter.email_info.first[:body][:html]).to eql '<html>body</html>'
     end
   end
 end

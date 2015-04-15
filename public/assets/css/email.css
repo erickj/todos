@@ -1,0 +1,67 @@
+/** content styles */
+table.outer {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.contentbox {
+    width: 800px;
+}
+
+table.contentbox td.indent-wedge {
+    width: 100px;
+}
+
+.header {
+    border-top: 10px solid #047398;
+    /* font-family: "Fira Sans OT Medium", sans-serif; */
+    font-family: sans-serif;
+}
+
+.header tr.gap {
+    height: 15px;
+}
+
+.header td.logo {
+    text-align: right;
+}
+
+.header td.title span {
+    color: #047398;
+    font-weight: 400;
+}
+
+.header .buttonbox {
+    text-align: right;
+}
+
+a.button {
+    display: inline-block;
+    height: 100%;
+    padding: 5px;
+    background-color: #047398;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+}
+
+/** sizing */
+body {
+    font-size: 12px;
+}
+
+.header {
+    font-size: 1rem;
+}
+
+.header td.logo img {
+    width: 32px;
+}
+
+.header .title {
+    font-size: 2.5em;
+}
+
+.header .button {
+    font-size: 1.3em;
+}

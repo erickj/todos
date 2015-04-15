@@ -15,15 +15,35 @@ module Todo
 
       module ClassMethods
 
+        include Helper::AssetHelper
+
+        LOGGER = Logging.logc self
+
         attr_reader :layout_name
 
         def globals
-          {}
+          unless @globals
+            @globals = {}
+            set_globals_css
+          end
+          @globals
         end
 
         def view_layout(layout_name)
           raise 'invalid layout name' unless layout_name.is_a? Symbol
           @layout_name = layout_name
+        end
+
+        private
+        def set_globals_css
+          @globals[:css] = {}
+          @globals[:css][:global] = css_file_contents :global
+
+          begin
+            @globals[:css][layout_name] = css_file_contents layout_name
+          rescue Errno::ENOENT
+            LOGGER.warn '%s.css requested but does not exist' % layout_name
+          end
         end
       end
     end

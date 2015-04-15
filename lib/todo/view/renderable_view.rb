@@ -43,6 +43,8 @@ module Todo
 
       class RenderContext
 
+        include Todo::View::Helper::AssetHelper
+
         def initialize(mode, globals={}, tpl_string_proc, &yield_block)
           @mode = mode
           @locals = nil

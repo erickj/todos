@@ -1,5 +1,6 @@
 require 'em-spec/rspec'
 require 'support/em_hiredis_support'
+require 'support/todo_support'
 require 'dm-core'
 require 'dm-migrations'
 require 'dm-transactions'
@@ -39,6 +40,7 @@ RSpec.configure do |config|
 
   config.include EventMachine::SpecHelper
   config.include EmHiredisSupport::Helper
+  config.include TodoSupport::RenderHelper
 
   # inspect the ENV for configuration variables
   if ENV['RSPEC_DEBUG_DB'] =~ /(true|1)/

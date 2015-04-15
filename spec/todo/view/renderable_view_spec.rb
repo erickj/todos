@@ -111,41 +111,19 @@ RSpec.describe Todo::View::RenderableView, :view do
 
   context 'template files' do
 
-    let(:templates) do
+    let(:tpls) do
       {
-        :'file_layout.txt.erb' => 'My txt file layout! <%= yield %>',
-        :'_file_partial.txt.erb' => 'My txt file partial!'
+        :layouts => { :'file_layout' => { :txt => 'My txt file layout! <%= yield %>' }},
+        :partials => { :'file_partial' => { :txt => 'My txt file partial!' }}
       }
     end
 
     subject { Todo::View::RenderableView.new :file_partial, globals, :file_layout }
 
-    def install_template_files(dir)
-      templates.each do |name, content|
-        tpl_file = File.new File.join(dir, name.to_s), 'w'
-        tpl_file.write content
-        tpl_file.close
-      end
-    end
-
-    around(:each) do |example|
-      orig_root = Todo::View.template_root
-      begin
-
-        tpl_dir = Dir.mktmpdir
-        Todo::View.template_root(tpl_dir)
-        install_template_files(tpl_dir)
-
-        example.run
-
-        FileUtils.remove_entry tpl_dir
-      ensure
-        Todo::View.template_root orig_root
-      end
-    end
-
     it 'should be looked up by name and mode' do
-      expect(subject.render :txt).to be == 'My txt file layout! My txt file partial!'
+      run_with_template_files tpls[:layouts], tpls[:partials] do
+        expect(subject.render :txt).to be == 'My txt file layout! My txt file partial!'
+      end
     end
   end
 

@@ -104,4 +104,50 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
       end
     end
   end
+
+  context Todo::Command::CreateTodo::ResultProcessor do
+
+    let(:command) { Todo::Command::CreateTodo::Command.build data }
+    let(:processor) { Todo::Command::CreateTodo::Processor.new }
+    let(:command_result) { processor.process_command command }
+    let(:stub_adapter) { Todo::Mail::Adapter::Fake.new }
+
+    subject { Todo::Command::CreateTodo::ResultProcessor.new }
+
+    around(:each) do |example|
+      default_adapter = Todo::Mail::Emailer.mail_adapter
+      Todo::Mail::Emailer.mail_adapter stub_adapter
+
+      example.run
+
+      Todo::Mail::Emailer.mail_adapter default_adapter
+    end
+
+    it 'sends emails to the owner' do
+      subject.process_command command_result
+
+      owner_email = stub_adapter.email_info.first
+
+      expect(owner_email[:to]).to be == ['e@j.com']
+      expect(owner_email[:body][:txt]).to be =~ /^Do Til Done/
+      expect(owner_email[:body][:html]).to be =~ /^<html>/
+      expect(owner_email[:reply_to]).to be =~ /^todo\+[\S]+/
+      expect(owner_email[:subject]).to be == 'Todo: [%s]' % data[:title]
+    end
+
+    it 'sends an emai to each collaborator' do
+      subject.process_command command_result
+
+      expect(stub_adapter.email_info.size).to be 3
+
+      collaborator_emails = stub_adapter.email_info.slice(-2, 2)
+      expect(collaborator_emails.map { |e| e[:to] }.flatten).to be == [ 'a@collab.com', 'b@collab.com']
+      collaborator_emails.each do |e|
+        expect(e[:body][:txt]).to be =~ /^Do Til Done/
+        expect(e[:body][:html]).to be =~ /^<html>/
+        expect(e[:reply_to]).to be =~ /^todo\+[\S]+/
+        expect(e[:subject]).to be == 'Todo: [%s]' % data[:title]
+      end
+    end
+  end
 end

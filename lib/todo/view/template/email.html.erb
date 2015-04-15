@@ -14,7 +14,7 @@
       <tr>
         <td>
           <table class="header contentbox" align="center" cellpadding="0" cellspacing="0">
-            <tr class="gap">
+            <tr class="gap_sm"/>
             <tr>
               <td class="indent-wedge logo">
                 <img src="<%= img_file_path 'logo' %>"/>
@@ -27,22 +27,19 @@
               </td>
               <td class="indent-wedge"></td>
             </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <table class="contentbox" align="center">
+            <tr class="gap_lg"/>
             <tr>
-              <td>
+              <td class="indent-wedge"></td>
+              <td colspan="2">
+                <%= yield %>
               </td>
+              <td class="indent-wedge"></td>
             </tr>
           </table>
         </td>
       </tr>
     </table>
 
-    <%= yield %>
 
     <table>
       <tr>

@@ -130,7 +130,7 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
 
       expect(owner_email[:to]).to be == ['e@j.com']
       expect(owner_email[:body][:txt]).to be =~ /^Do Til Done/
-      expect(owner_email[:body][:html]).to be =~ /^<html>/
+      expect(owner_email[:body][:html]).to be =~ /^<!DOCTYPE html/
       expect(owner_email[:reply_to]).to be =~ /^todo\+[\S]+/
       expect(owner_email[:subject]).to be == 'Todo: [%s]' % data[:title]
     end
@@ -144,7 +144,7 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
       expect(collaborator_emails.map { |e| e[:to] }.flatten).to be == [ 'a@collab.com', 'b@collab.com']
       collaborator_emails.each do |e|
         expect(e[:body][:txt]).to be =~ /^Do Til Done/
-        expect(e[:body][:html]).to be =~ /^<html>/
+        expect(e[:body][:html]).to be =~ /^<!DOCTYPE html/
         expect(e[:reply_to]).to be =~ /^todo\+[\S]+/
         expect(e[:subject]).to be == 'Todo: [%s]' % data[:title]
       end

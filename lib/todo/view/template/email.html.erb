@@ -10,10 +10,10 @@
     </style>
   </head>
   <body class="email">
-    <table class="outer" align="center" cellpadding="0" cellspacing="0"
+    <table class="outer" align="center" cellpadding="0" cellspacing="0">
       <tr>
         <td>
-          <table class="header contentbox" align="center" cellpadding="0" cellspacing="0">
+          <table class="header component contentbox" align="center" cellpadding="0" cellspacing="0">
             <tr class="gap_sm"/>
             <tr>
               <td class="indent-wedge logo">
@@ -23,28 +23,33 @@
                 <span>Do Til Done</span>
               </td>
               <td class="buttonbox">
-                <a class="button" href="#">Create Todo</a>
+                <a class="button boxborders" href="#">Create a Todo</a>
               </td>
               <td class="indent-wedge"></td>
             </tr>
+          </table>
+
+          <!-- yield block -->
+          <table class="contentbox" align="center" cellpadding="0" cellspacing="0">
             <tr class="gap_lg"/>
             <tr>
               <td class="indent-wedge"></td>
-              <td colspan="2">
+              <td>
                 <%= yield %>
               </td>
               <td class="indent-wedge"></td>
             </tr>
           </table>
+
+          <!-- help block -->
+        </td>
+      </tr>
+      <tr class="gap_lg"/>
+      <tr>
+        <td class="unsubscribe component">
+          <a href="#">Unsubscribe from all future emails</a>
         </td>
       </tr>
     </table>
-
-
-    <table>
-      <tr>
-        <td>unsubscribe</td>
-      </tr>
-    </table>
   </body>
-</html>
+  </html>

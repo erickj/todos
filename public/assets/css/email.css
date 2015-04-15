@@ -1,3 +1,10 @@
+body {
+    font-size: 12px;
+    /* font-family: "Fira Sans OT Medium", sans-serif; */
+    font-family: sans-serif;
+    color: #595959;
+}
+
 /** content styles */
 table.outer {
     width: 100%;
@@ -13,26 +20,19 @@ table.contentbox td.indent-wedge {
 }
 
 tr.gap_sm {
-    height: 15px;
+    height: 1em;
 }
 
 tr.gap_lg {
-    height: 50px;
+    height: 2em;
 }
 
 .header {
     border-top: 10px solid #047398;
-    /* font-family: "Fira Sans OT Medium", sans-serif; */
-    font-family: sans-serif;
 }
 
 .header td.logo {
     text-align: right;
-}
-
-.header td.title span {
-    color: #047398;
-    font-weight: 400;
 }
 
 .header .buttonbox {
@@ -49,23 +49,72 @@ a.button {
     text-decoration: none;
 }
 
-/** sizing */
-body {
-    font-size: 12px;
+.boxborders {
+    border: 1px solid #eee;
+    border-right: 2px solid #e6e6e6;
+    border-bottom: 2px solid #e6e6e6;
 }
 
-.header {
-    font-size: 1rem;
+.card {
+    width: 100%;
+}
+
+.card.todo .status {
+    text-align: right;
+}
+
+/** components */
+
+.header.component {
+    font-size: 1.2rem;
 }
 
 .header td.logo img {
     width: 32px;
 }
 
-.header .title {
-    font-size: 2.5em;
+.card.component {
+    font-size: 1rem;
 }
 
-.header .button {
+.card {
+    padding: 1em;
+    background-color: #fcfcff;
+    font-family:
+}
+
+.card .header {
+    font-size: 1.35em;
+}
+
+.card .header,
+.card .status {
+    color: #999;
+}
+
+.card td.status {
+    vertical-align: bottom;
+}
+
+
+.title {
+    font-size: 2.2em;
+    color: #047398;
+    font-weight: 400;
+}
+
+.button {
     font-size: 1.3em;
+}
+
+.unsubscribe.component {
+    font-size: 1.1rem;
+}
+
+.unsubscribe {
+    text-align: center;
+}
+
+.unsubscribe a {
+    color: #595959;
 }

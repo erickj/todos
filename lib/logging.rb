@@ -8,8 +8,22 @@ module Logging
 
   LEVELS = [:debug, :info, :warn, :error, :fatal, :all]
 
-  def self.included(base)
-    base.extend ClassMethods
+  class << self
+    def included(base)
+      base.extend ClassMethods
+    end
+
+    def logger_for_class(klass)
+      @class_loggers ||= {}
+      unless @class_loggers[klass]
+        @class_loggers[klass] = Class.new do
+          include Logging
+        end.new
+      end
+
+      @class_loggers[klass]
+    end
+    alias :logc :logger_for_class
   end
 
   def log
@@ -23,6 +37,12 @@ module Logging
 
   def log_fatal(context_name, error)
     log_error context_name, error, :fatal
+  end
+
+  LEVELS.each do |level|
+    define_method level do |*args|
+      log.send level, *args
+    end
   end
 
   module ClassMethods

@@ -149,5 +149,15 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
         expect(e[:subject]).to be == 'Todo: [%s]' % data[:title]
       end
     end
+
+    context 'render tests', :render do
+
+      before(:each) { subject.process_command command_result }
+      let(:owner_email_html) { stub_adapter.email_info.first[:body][:html] }
+      let(:collab_email_html) { stub_adapter.email_info.last[:body][:html] }
+
+      it { save_rendered_data 'todo_create.email', 'owner.html', owner_email_html }
+      it { save_rendered_data 'todo_create.email', 'collab.html', collab_email_html }
+    end
   end
 end

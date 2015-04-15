@@ -1,3 +1,5 @@
+require 'tmpdir'
+require 'fileutils'
 require 'todo/view'
 
 module TodoSupport
@@ -20,6 +22,10 @@ module TodoSupport
       ensure
         Todo::View.template_root orig_root
       end
+    end
+
+    def inspect_rendered_template(data, file_extension)
+
     end
 
     private

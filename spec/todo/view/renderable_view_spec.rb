@@ -1,6 +1,3 @@
-require 'tmpdir'
-require 'fileutils'
-
 RSpec.describe Todo::View::RenderableView, :view do
 
   let(:template_data) do

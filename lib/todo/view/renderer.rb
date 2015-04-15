@@ -8,14 +8,18 @@ module Todo
         end
       end
 
-      def render(partial_name, locals={})
-        view = RenderableView.new partial_name, self.class.globals, self.class.layout_name
-        view.render locals
+      def render(partial_name, mode, locals={}, &render_block)
+        view = RenderableView.new partial_name, self.class.globals, self.class.layout_name, &render_block
+        view.render mode, locals
       end
 
       module ClassMethods
 
         attr_reader :layout_name
+
+        def globals
+          {}
+        end
 
         def view_layout(layout_name)
           raise 'invalid layout name' unless layout_name.is_a? Symbol

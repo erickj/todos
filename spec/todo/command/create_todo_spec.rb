@@ -34,6 +34,17 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
     expect(deserialize_task(serialized_command)).to be == subject
   end
 
+  context 'with creator email' do
+    let(:creator_data) { data.merge :creator_email => 'c@creator.com' }
+
+    subject { Todo::Command::CreateTodo::Command.build creator_data }
+
+    it 'builds a task' do
+      expect(subject.owner_email).to eql 'e@j.com'
+      expect(subject.creator_email).to eql 'c@creator.com'
+    end
+  end
+
   context Todo::Command::CreateTodo::Processor do
 
     let(:processor) { Todo::Command::CreateTodo::Processor.new }
@@ -84,7 +95,30 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
       expect(todo_template.title).to eql 'a title'
     end
 
-    context 'when collaborators are in the command' do
+    context 'without a creator' do
+      it 'should use the owner as the creator' do
+        task_result = processor.process_command subject
+        todo_template = Todo::Model.task_result_hash_to_model task_result.result[:todo_template]
+
+        expect(todo_template.owner).to be == todo_template.creator
+      end
+    end
+
+    context 'with a creator' do
+      let(:creator_data) { data.merge :creator_email => 'c@creator.com' }
+
+      subject { Todo::Command::CreateTodo::Command.build creator_data }
+
+      it 'should create a creator ' do
+        task_result = processor.process_command subject
+        todo_template = Todo::Model.task_result_hash_to_model task_result.result[:todo_template]
+
+        expect(todo_template.creator.email).to be == 'c@creator.com'
+        expect(todo_template.owner.email).to be == 'e@j.com'
+      end
+    end
+
+    context 'with collaborators' do
       it 'should create collaborators' do
         Todo::Model::Person.create :email => 'e@j.com'
         expect(Todo::Model::Person.count).to be 1

@@ -17,6 +17,9 @@ module Todo
           .required
           .type String
 
+        field(:creator_email)
+          .type String
+
         field(:collaborator_emails)
           .default([])
           .collection_of String
@@ -37,30 +40,50 @@ module Todo
         # overrides
         protected
         def process_command_internal(create_todo_command)
-          fields = create_todo_command.to_h
+          model_fields = create_todo_command.to_h
 
           new_users = []
 
+          # Read/Create owner
           owner = Model::Person.first :email => create_todo_command.owner_email
           if owner.nil?
             owner = Model::Person.create :email => create_todo_command.owner_email
             new_users << owner
           end
-          fields.delete :owner_email
-          fields[:owner] = owner
+          model_fields.delete :owner_email
+          model_fields[:owner] = owner
 
-          fields[:collaborators] = []
+          # Read/Create creator
+          creator_email = create_todo_command.creator_email.nil? ?
+                            create_todo_command.owner_email :
+                            create_todo_command.creator_email
+          creator = nil
+          if creator_email == create_todo_command.owner_email
+            creator = owner
+          else
+            creator = Model::Person.first :email => creator_email
+            if creator.nil?
+              creator = Model::Person.create :email => creator_email
+              new_users << creator
+            end
+          end
+          model_fields.delete :creator_email
+          model_fields[:creator] = creator
+
+          # Read/Create collaborators
+          model_fields[:collaborators] = []
           create_todo_command.collaborator_emails.each do |email|
             collaborator = Model::Person.first :email => email
             if collaborator.nil?
               collaborator = Model::Person.create :email => email
               new_users << collaborator
             end
-            fields[:collaborators] << collaborator
+            model_fields[:collaborators] << collaborator
           end
-          fields.delete :collaborator_emails
+          model_fields.delete :collaborator_emails
 
-          todo_template = Model::TodoTemplate.create(fields)
+          # Create todo
+          todo_template = Model::TodoTemplate.create model_fields
 
           WQ::TaskResult.create_success_result create_todo_command, {
             :new_users => new_users.map { |u| Model.model_to_task_result_hash u },
@@ -94,27 +117,31 @@ module Todo
           locals = {
             :todo_template => todo_template,
             :new_users => new_users,
-            :role => :owner
+            :role => :creator
           }
+
+          # Email creator
           email_builder
             .subject(subject)
             .reply_to(reply_to_slug todo_template.slug)
-            .to(todo_template.owner)
+            .to(todo_template.creator)
             .body_txt(render :todo_create, :txt, locals)
             .body_html(render :todo_create, :html, locals)
             .send
 
+          # Maybe email owner
           if todo_template.owner != todo_template.creator
-            locals[:role] = :creator
+            locals[:role] = :owner
             email_builder
               .subject(subject)
               .reply_to(reply_to_slug todo_template.slug)
-              .to(todo_template.creator)
+              .to(todo_template.owner)
               .body_txt(render :todo_create, :txt, locals)
               .body_html(render :todo_create, :html, locals)
               .send
           end
 
+          # Email each collaborator
           todo_template.collaborators.each do |collaborator|
             locals[:role] = :collaborator
             email_builder

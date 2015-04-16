@@ -2,8 +2,6 @@ require 'mandrill'
 require 'workqueue'
 require 'logging'
 require 'todo/command'
-require 'todo/model'
-require 'todo/view/mailer_view'
 
 module Todo
   module Mail
@@ -11,6 +9,14 @@ module Todo
       include WQ::RedisConsumer
       include WQ::Subscriber
       include Logging
+
+      COMMAND_SOURCE = Todo::Command::CommandSource.new
+
+      class << self
+        def workqueue_handlers
+          [ COMMAND_SOURCE ]
+        end
+      end
 
       def initialize
         raise 'environment var MANDRILL_APIKEY not set for mandrill gem' unless ENV['MANDRILL_APIKEY']
@@ -30,39 +36,16 @@ module Todo
 
       def handle_pubsub_message(message)
         task_result = WQ::TaskSerializer.instance.deserialize(message)
+        log.debug { 'received task type: %s' % task_result.task_type }
 
-        case task_result.original_task_type
+        case task_result.original_task.task_type
         when Command::TaskType::CREATE_TODO
           handle_create_todo_result(task_result)
         end
       end
 
       def handle_create_todo_result(task_result)
-        log.info 'sending mail for created todo result: %s' % task_result.original_task_uuid
-        todo_tpl = Model::TodoTemplate.by_uuid! task_result.result_key
-        owner = todo_tpl.owner
-
-        view = View::MailerView.new Command::TaskType::CREATE_TODO, todo_tpl, owner
-
-        send_mail owner.email, todo_tpl.title, view
-      end
-
-      def send_mail(to, subject, view)
-        m = Mandrill::API.new
-        message = {
-          :subject => "Re: %s" % subject,
-          :from_name => "Do Til Done",
-          :text => view.generate_txt,
-          :to => [
-            {
-              :email=> ENV['OVERRIDE_EMAIL_RECIPIENT'] || to,
-              :name=> "Recipient1"
-            }
-          ],
-          :html => view.generate_html,
-          :from_email => ENV['FROM_EMAIL']
-        }
-        m.messages.send message
+        COMMAND_SOURCE << task_result
       end
     end
   end

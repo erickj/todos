@@ -19,6 +19,8 @@ module Todo
       end
 
       class EmailBuilder
+        include Logging
+
         def initialize(mail_adapter)
           @mail_adapter = mail_adapter
         end
@@ -34,7 +36,14 @@ module Todo
         end
 
         def to(*persons)
-          @to = persons
+          @to = persons.map do |p|
+            if p.respond_to?(:email) && p.respond_to?(:name)
+              { :email => p.email, :name => p.name }
+            else
+              raise 'invalid person type for email' unless p.is_a? String
+              { :email => p, :name => p }
+            end
+          end
           self
         end
 
@@ -59,6 +68,7 @@ module Todo
                                 :txt => @body_txt
                               }
                             })
+          log.info { 'sent email to %s' % @to.map { |p| p[:email] } }
         end
       end
     end
@@ -84,7 +94,10 @@ module Todo
             :from_name => ENV['FROM_NAME'],
             :from_email => ENV['FROM_EMAIL'],
             :to => email_info[:to].map do |p|
-              {:email => p.email, :name => p.name, :type => 'to' }
+              if ENV['OVERRIDE_EMAIL_RECIPIENT']
+                p[:email] = ENV['OVERRIDE_EMAIL_RECIPIENT']
+              end
+              p.merge :type => 'to'
             end,
             :headers => {
                          :"Reply-To" => email_info[:reply_to]

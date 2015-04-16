@@ -99,7 +99,7 @@ module Todo
           email_builder
             .subject(subject)
             .reply_to(reply_to_slug todo_template.slug)
-            .to(todo_template.owner.email)
+            .to(todo_template.owner)
             .body_txt(render :todo_create, :txt, locals)
             .body_html(render :todo_create, :html, locals)
             .send
@@ -109,7 +109,7 @@ module Todo
             email_builder
               .subject(subject)
               .reply_to(reply_to_slug todo_template.slug)
-              .to(todo_template.creator.email)
+              .to(todo_template.creator)
               .body_txt(render :todo_create, :txt, locals)
               .body_html(render :todo_create, :html, locals)
               .send
@@ -120,11 +120,13 @@ module Todo
             email_builder
               .subject(subject)
               .reply_to(reply_to_slug todo_template.slug)
-              .to(collaborator.email)
+              .to(collaborator)
               .body_txt(render :todo_create, :txt, locals)
               .body_html(render :todo_create, :html, locals)
               .send
           end
+
+          WQ::TaskResult.create_success_result create_todo_result
         end
       end
     end

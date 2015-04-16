@@ -29,7 +29,8 @@ RSpec.describe Todo::Mail::Emailer, :mail do
 
     it 'sets the to' do
       email_builder.to('foo@bar.com', 'bar@foo.com').send
-      expect(stub_adapter.email_info.first[:to]).to eql ['foo@bar.com', 'bar@foo.com']
+      expect(stub_adapter.email_info.first[:to].map { |p| p[:email]})
+        .to eql ['foo@bar.com', 'bar@foo.com']
     end
 
     it 'sets the body' do

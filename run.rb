@@ -87,6 +87,7 @@ Todo::App.start do |app|
   wq_event_handlers << Todo::Command::CommandSink.new
   wq_event_handlers.concat Todo::WebApi.workqueue_handlers
   wq_event_handlers.concat Todo::MailApi.workqueue_handlers
+  wq_event_handlers.concat Todo::Mail::TodoMailer.workqueue_handlers
 
   wq_event_handlers.each { |h| app.add_wq_event_handler h }
 
@@ -95,4 +96,5 @@ Todo::App.start do |app|
   app.map '/debug'   , Todo::DebugApi.new
   app.map '/api'     , Todo::WebApi.new
   app.map '/mailapi' , Todo::MailApi.new
+
 end

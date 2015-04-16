@@ -31,7 +31,7 @@ RSpec.describe WQ::TaskMixin, :wq do
     expect(UUIDTools::UUID.parse task.uuid).to be_a UUIDTools::UUID
   end
 
-  context 'fields and build' do
+  context 'builder' do
 
     let(:field_values) do
       {
@@ -54,6 +54,10 @@ RSpec.describe WQ::TaskMixin, :wq do
     end
 
     subject { DoErrandsTask.build field_values }
+
+    it 'has a builder method' do
+      expect(DoErrandsTask.builder).to respond_to :build
+    end
 
     it 'builds a task from a hash of fields' do
       expect(subject.errand_list).to eql [:bank, :shopping]

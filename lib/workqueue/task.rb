@@ -116,6 +116,10 @@ module WorkQueue
         @field_definitions.has_key? name
       end
 
+      def builder
+        self
+      end
+
       def build(field_values, task_type=nil)
         task = self.allocate
 

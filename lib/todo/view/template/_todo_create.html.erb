@@ -1,17 +1,59 @@
 <table class="card component todo boxborders" align="center" cellpadding="0" cellspacing="0">
   <tr class="header">
-    <td colspan="2">Got your new Todo</td>
+    <td colspan="2">
+      <span>
+        <%=
+           case locals.role
+           when :owner
+             get_message [:create_todo, :header, :owner], locals.todo_template.creator.email
+           when :creator
+             get_message [:create_todo, :header, :creator]
+           when :collaborator
+             get_message [:create_todo, :header, :collaborator], locals.todo_template.creator.email
+           end
+           %>
+      </span>
+    </td>
   </tr>
   <tr class="gap_sm"/>
+
   <tr>
     <td class="title">
-      <span><%= locals.todo_template.title %></span>
+      <span><%= h truncate_string(locals.todo_template.title, 20) %></span>
     </td>
-    <td class="status">not done</td>
+    <td class="status">
+      <span><%= locals.todo_template.state.to_s %></span>
+    </td>
   </tr>
+
+  <% unless locals.todo_template.collaborators.empty? %>
+    <tr class="deemphasize">
+      <td colspan="2">
+        <span>
+          <%= get_message [:create_todo, :shared_with], locals.todo_template.collaborators.size %>
+        </span>
+      </td>
+    </tr>
+  <% end %>
+
+  <tr class="gap_sm"/>
   <tr>
     <td class="description" colspan="2">
-      <%= locals.todo_template.description %>
+      <p><%= h truncate_string(locals.todo_template.description, 140) %></p>
+    </td>
+  </tr>
+
+  <tr class="footer deemphasize">
+    <td colspan="2">
+      <p>
+        To add more to this Todo, reply to this email or forward any other email
+        to
+        <strong>
+          <%= a_tag 'mailto:' << reply_to_slug(locals.todo_template.slug) do
+             reply_to_slug locals.todo_template.slug
+             end %>
+        </strong>.
+      </p>
     </td>
   </tr>
 </table>

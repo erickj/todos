@@ -15,7 +15,7 @@ module Todo
 
       module ClassMethods
 
-        include Helper::AssetHelper
+        include Helper::Base
 
         LOGGER = Logging.logc self
 

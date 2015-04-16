@@ -14,10 +14,6 @@ module Todo
         end
       end
 
-      def reply_to_slug(slug)
-        'todo+' << slug
-      end
-
       def email_builder
         EmailBuilder.new Todo::Mail::Emailer.mail_adapter
       end

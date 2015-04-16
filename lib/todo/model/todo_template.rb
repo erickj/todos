@@ -46,7 +46,7 @@ module Todo
       end
 
       def create_slug
-        self.slug ||= SecureRandom.urlsafe_base64 10
+        self.slug ||= SecureRandom.urlsafe_base64 12
       end
 
       def set_creator

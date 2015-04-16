@@ -152,6 +152,33 @@ RSpec.describe Todo::Command::CreateTodo::Command, :command do
 
     context 'render tests', :render do
 
+      let(:description) do
+        <<EOS
+<script type="text/javascript">alert('pwnd')</script>
+
+Let me take you down, cos I'm going to Strawberry Fields
+Nothing is real and nothing to get hung about
+Strawberry Fields forever
+
+Living is easy with eyes closed
+Misunderstanding all you see
+It's getting hard to be someone but it all works out
+It doesn't matter much to me
+Let me take you down, cos I'm going to Strawberry Fields
+Nothing is real and nothing to get hung about
+Strawberry Fields forever
+EOS
+      end
+
+      let(:data) {{
+                    :owner_email => 'john@lennon.org',
+                    :title => 'Strawberry Fields Forever',
+                    :description => description,
+                    :collaborator_emails => [
+                      'paul@mccartney.org', 'ringo@star.com', 'george@harrison.net'
+                    ]
+                  }}
+
       before(:each) { subject.process_command command_result }
       let(:owner_email_html) { stub_adapter.email_info.first[:body][:html] }
       let(:collab_email_html) { stub_adapter.email_info.last[:body][:html] }

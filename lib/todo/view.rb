@@ -6,6 +6,7 @@ module Todo
   end
 end
 
-require 'todo/view/helper/asset_helper'
+require 'todo/view/messages'
+require 'todo/view/helper/base'
 require 'todo/view/renderable_view'
 require 'todo/view/renderer'

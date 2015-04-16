@@ -73,6 +73,7 @@ module Todo
         include Todo::Command::Processor
         include Todo::Mail::Emailer
         include Todo::View::Renderer
+        include Todo::View::Helper::Base
 
         view_layout :email
 
@@ -115,7 +116,7 @@ module Todo
           end
 
           todo_template.collaborators.each do |collaborator|
-            locals[:role] = collaborator
+            locals[:role] = :collaborator
             email_builder
               .subject(subject)
               .reply_to(reply_to_slug todo_template.slug)

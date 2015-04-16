@@ -6,6 +6,10 @@ body {
 }
 
 /** content styles */
+a {
+    color: #047398;
+}
+
 table.outer {
     width: 100%;
     border-collapse: collapse;
@@ -55,6 +59,16 @@ a.button {
     border-bottom: 2px solid #e6e6e6;
 }
 
+.deemphasize {
+    font-size: 0.9em;
+    color: #aaa;
+}
+
+.deemphasize a {
+    color: #909090;
+}
+
+
 .card {
     width: 100%;
 }
@@ -87,6 +101,11 @@ a.button {
     font-size: 1.35em;
 }
 
+.card .description {
+    font-size: 1.15em;
+    white-space: pre-line;
+}
+
 .card .header,
 .card .status {
     color: #999;
@@ -113,8 +132,4 @@ a.button {
 
 .unsubscribe {
     text-align: center;
-}
-
-.unsubscribe a {
-    color: #595959;
 }

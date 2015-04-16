@@ -96,7 +96,6 @@ module Todo
         include Todo::Command::Processor
         include Todo::Mail::Emailer
         include Todo::View::Renderer
-        include Todo::View::Helper::Base
 
         view_layout :email
 

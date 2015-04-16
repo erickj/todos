@@ -2,6 +2,8 @@ module Todo
   module View
     module Renderer
 
+      include Helper::Base
+
       class << self
         def included(base)
           base.extend ClassMethods

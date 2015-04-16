@@ -2,6 +2,8 @@ require 'todo/view/renderer'
 
 RSpec.describe Todo::View::Renderer, :view do
 
+  it_behaves_like 'a string helper'
+
   let(:locals) {{ :x => 'local-x' }}
 
   let(:template_data) do

@@ -1,0 +1,130 @@
+[
+    {
+        "event": "inbound",
+        "ts": 1429229437,
+        "msg": {
+            "raw_msg": "Received: from mail-oi0-f49.google.com (unknown [209.85.218.49])\n\tby ip-10-39-136-77 (Postfix) with ESMTPS id A8E092C00B1\n\tfor <todo@todo.service.domain>; Fri, 17 Apr 2015 00:10:36 +0000 (UTC)\nReceived: by oift201 with SMTP id t201so61312264oif.3\n        for <todo@todo.service.domain>; Thu, 16 Apr 2015 17:10:36 -0700 (PDT)\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed\/relaxed;\n        d=gmail.com; s=20120113;\n        h=mime-version:from:date:message-id:subject:to:cc:content-type;\n        bh=FMmKUYU5XlSO1P9ZmKm+l4DimFB3CXVVonzzuUhawb0=;\n        b=bkDIl+CuBU9sS1OqiOC\/+Zo4y4dihtVN9CaqqhTS\/AqILA6Jx9pQW0WaLOQ5SUB47B\n         4LJMoB5grr7QAMsjgtFN0W89mAFZtmgLZHxzsfSZgH7uxv14J9MTqm12kNlPRRWm9M6D\n         GQbjaWHbKRAJNPKT9BxiM0+hj9pYGQtfUmOo55HR3zc60JS6UksYwviJEzerVQIlmnsx\n         gWYdrokD+3O3xDRdT5w\/n9ebwbUCisYZI4WnfWWaF+eQh4p2WBdGKhiuuQIM8mlTjx8w\n         XSwtx+QpAc\/uafraN9ofKNoVj6pjW4i2OVHz9JgZSjQkfJD6i7QAJwEHodaRu9gLVduo\n         kptw==\nX-Received: by 10.202.78.66 with SMTP id c63mr319593oib.0.1429229436003; Thu,\n 16 Apr 2015 17:10:36 -0700 (PDT)\nMIME-Version: 1.0\nReceived: by 10.202.77.143 with HTTP; Thu, 16 Apr 2015 17:10:14 -0700 (PDT)\nFrom: Frim From <from@gmail.com>\nDate: Thu, 16 Apr 2015 20:10:14 -0400\nMessage-ID: <CAJznBodHZVxTWae_S74HA_y0gFvyQEW9VaGok6zXRoXcT6Tm+A@mail.gmail.com>\nSubject: coconuts\nTo: todo@todo.service.domain, Timbuk To <to@eie.io>\nCc: Cecil CC <cc@gmail.com>\nContent-Type: multipart\/alternative; boundary=001a11c1630ad60dad0513e06814\n\n--001a11c1630ad60dad0513e06814\nContent-Type: text\/plain; charset=UTF-8\n\nI have a lovely bunch of coconuts\n\n--001a11c1630ad60dad0513e06814\nContent-Type: text\/html; charset=UTF-8\n\n<div dir=\"ltr\">I have a lovely bunch of coconuts<\/div>\n\n--001a11c1630ad60dad0513e06814--",
+            "headers": {
+                "Received": [
+                    "from mail-oi0-f49.google.com (unknown [209.85.218.49]) by ip-10-39-136-77 (Postfix) with ESMTPS id A8E092C00B1 for <todo@todo.service.domain>; Fri, 17 Apr 2015 00:10:36 +0000 (UTC)",
+                    "by oift201 with SMTP id t201so61312264oif.3 for <todo@todo.service.domain>; Thu, 16 Apr 2015 17:10:36 -0700 (PDT)",
+                    "by 10.202.77.143 with HTTP; Thu, 16 Apr 2015 17:10:14 -0700 (PDT)"
+                ],
+                "Dkim-Signature": "v=1; a=rsa-sha256; c=relaxed\/relaxed; d=gmail.com; s=20120113; h=mime-version:from:date:message-id:subject:to:cc:content-type; bh=FMmKUYU5XlSO1P9ZmKm+l4DimFB3CXVVonzzuUhawb0=; b=bkDIl+CuBU9sS1OqiOC\/+Zo4y4dihtVN9CaqqhTS\/AqILA6Jx9pQW0WaLOQ5SUB47B 4LJMoB5grr7QAMsjgtFN0W89mAFZtmgLZHxzsfSZgH7uxv14J9MTqm12kNlPRRWm9M6D GQbjaWHbKRAJNPKT9BxiM0+hj9pYGQtfUmOo55HR3zc60JS6UksYwviJEzerVQIlmnsx gWYdrokD+3O3xDRdT5w\/n9ebwbUCisYZI4WnfWWaF+eQh4p2WBdGKhiuuQIM8mlTjx8w XSwtx+QpAc\/uafraN9ofKNoVj6pjW4i2OVHz9JgZSjQkfJD6i7QAJwEHodaRu9gLVduo kptw==",
+                "X-Received": "by 10.202.78.66 with SMTP id c63mr319593oib.0.1429229436003; Thu, 16 Apr 2015 17:10:36 -0700 (PDT)",
+                "Mime-Version": "1.0",
+                "From": "Frim From <from@gmail.com>",
+                "Date": "Thu, 16 Apr 2015 20:10:14 -0400",
+                "Message-Id": "<CAJznBodHZVxTWae_S74HA_y0gFvyQEW9VaGok6zXRoXcT6Tm+A@mail.gmail.com>",
+                "Subject": "coconuts",
+                "To": "todo@todo.service.domain, Timbuk To <to@eie.io>",
+                "Cc": "Cecil CC <cc@gmail.com>",
+                "Content-Type": "multipart\/alternative; boundary=001a11c1630ad60dad0513e06814"
+            },
+            "text": "I have a lovely bunch of coconuts\n\n",
+            "text_flowed": false,
+            "html": "<div dir=\"ltr\">I have a lovely bunch of coconuts<\/div>\n\n",
+            "from_email": "from@gmail.com",
+            "from_name": "Frim From",
+            "to": [
+                [
+                    "todo@todo.service.domain",
+                    null
+                ],
+                [
+                    "to@eie.io",
+                    "Timbuk To"
+                ]
+            ],
+            "cc": [
+                [
+                    "cc@gmail.com",
+                    "Cecil CC"
+                ]
+            ],
+            "subject": "coconuts",
+            "spf": {
+                "result": "pass",
+                "detail": "sender SPF authorized"
+            },
+            "spam_report": {
+                "score": 0.5,
+                "matched_rules": [
+                    {
+                        "name": "Timbuk To",
+                        "score": 0,
+                        "description": "to: [todo@, to@eie] [...]"
+                    },
+                    {
+                        "name": null,
+                        "score": 0,
+                        "description": null
+                    },
+                    {
+                        "name": "analysis",
+                        "score": 0,
+                        "description": "details:   (0.5 points, 5.0 required)"
+                    },
+                    {
+                        "name": "rule",
+                        "score": 0,
+                        "description": "name              description"
+                    },
+                    {
+                        "name": "----------------------",
+                        "score": 0,
+                        "description": "--------------------------------------------------"
+                    },
+                    {
+                        "name": "RCVD_IN_DNSWL_LOW",
+                        "score": -0.7,
+                        "description": "RBL: Sender listed at http:\/\/www.dnswl.org\/, low"
+                    },
+                    {
+                        "name": "listed",
+                        "score": 0,
+                        "description": "in list.dnswl.org]"
+                    },
+                    {
+                        "name": "FREEMAIL_FROM",
+                        "score": 0,
+                        "description": "Sender email is commonly abused enduser mail provider"
+                    },
+                    {
+                        "name": "HTML_MESSAGE",
+                        "score": 0,
+                        "description": "BODY: HTML included in message"
+                    },
+                    {
+                        "name": "DKIM_VALID_AU",
+                        "score": -0.1,
+                        "description": "Message has a valid DKIM or DK signature from author's"
+                    },
+                    {
+                        "name": "DKIM_SIGNED",
+                        "score": 0.1,
+                        "description": "Message has a DKIM or DK signature, not necessarily valid"
+                    },
+                    {
+                        "name": "DKIM_VALID",
+                        "score": -0.1,
+                        "description": "Message has at least one valid DKIM or DK signature"
+                    },
+                    {
+                        "name": "RDNS_NONE",
+                        "score": 1.3,
+                        "description": "Delivered to internal network by a host with no rDNS"
+                    }
+                ]
+            },
+            "dkim": {
+                "signed": true,
+                "valid": true
+            },
+            "email": "todo@todo.service.domain",
+            "tags": [],
+            "sender": null,
+            "template": null
+        }
+    }
+]

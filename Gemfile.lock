@@ -71,7 +71,7 @@ GEM
       rspec (> 2.6.0)
       test-unit
     eventmachine (1.0.7)
-    excon (0.45.1)
+    excon (0.85.0)
     fastercsv (1.5.5)
     hiredis (0.5.2)
     json (1.8.2)

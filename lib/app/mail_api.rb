@@ -1,7 +1,8 @@
 require 'json'
 require 'todo/command'
-require 'uri'
+require 'todo/mail'
 require 'logging'
+require 'uri'
 
 module Todo
   class MailApi < Sinatra::Base
@@ -40,28 +41,46 @@ module Todo
     end
 
     private
-    def process_mail_events(json_events)
-      json_events.each do |json_event|
-        case json_event[:event]
-        when 'inbound'
-          process_inbound_mail_event json_event
-        else
-          raise 'unknown event type %s' % json_event[:event]
-        end
+    def process_mandrill_events(uri_encoded_mandrill_events)
+      json_events = JSON.parse URI.decode(uri_encoded_mandrill_events), :symbolize_names => true
+      inbound_messages = Todo::Mail::InboundMaillMessage::MandrillBuilder.build_from_json_events json_events
+      inbound_messages.each do |message|
+        COMMAND_SOURCE << build_task_from_message(message)
       end
     end
 
-    # see http://help.mandrill.com/entries/22092308-What-is-the-format-of-inbound-email-webhooks-
-    def process_inbound_mail_event(json_event)
-      title = URI.decode_www_form_component json_event[:msg][:subject]
-      description = URI.decode_www_form_component json_event[:msg][:text]
-      owner_email = URI.decode_www_form_component json_event[:msg][:from_email]
+    def build_task_from_message(inbound_message)
+      from_user = inbound_message.from_persona.user
+      task_type, task_data = case from_user
+#                             when 'list'
+#                               create_get_list_event json_event
+                             when 'todo'
+                               [
+                                 Todo::Command::TaskType::CREATE_TODO,
+                                 message_to_create_todo_task_data(inbound_message)
+                               ]
+#                             when /^todo\+[.]+/
+#                               create_update_todo_event json_event
+                             else
+                               raise 'unknown from email %s' % from_user
+                             end
 
-      COMMAND_SOURCE << Todo::Command::CreateTodo::Command.build({
-                                                                   :owner_email => owner_email,
-                                                                   :title => title,
-                                                                   :description => description
-                                                                 })
+      task_builder = Todo::Command::CommandBuilder.builder_for task_type
+      task_builder.build task_data
     end
+
+    def message_to_create_todo_task_data(inbound_message)
+      {
+        :creator_email => inbound_message.from.email,
+        :title => decode_value(inbound_message.msg_subject),
+        :description => decode_value(inbound_message.msg_text)
+      }
+    end
+
+    private
+    def decode_value(value)
+      URI.decode_www_form_component value
+    end
+
   end
 end
